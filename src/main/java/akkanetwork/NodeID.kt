@@ -1,4 +1,4 @@
-package akkaNetwork
+package akkanetwork
 
 import java.io.Serializable
 

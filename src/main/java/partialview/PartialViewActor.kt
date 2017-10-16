@@ -2,9 +2,9 @@ package partialview
 
 import akka.actor.AbstractActor
 import akka.actor.Props
-import akkaNetwork.AkkaConstants
-import akkaNetwork.AkkaUtils
-import akkaNetwork.NodeID
+import akkanetwork.AkkaConstants
+import akkanetwork.AkkaUtils
+import akkanetwork.NodeID
 
 class PartialViewActor(val myID: NodeID,val contactNode: NodeID, val fanout: Int,
                        val partialView: PartialView = PartialView()) : AbstractActor() {

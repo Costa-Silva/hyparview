@@ -1,7 +1,7 @@
 
 import akka.actor.ActorSystem
-import akkaNetwork.AkkaConstants
-import akkaNetwork.NodeID
+import akkanetwork.AkkaConstants
+import akkanetwork.NodeID
 import com.typesafe.config.ConfigFactory
 import partialview.PartialViewActor
 

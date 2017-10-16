@@ -1,4 +1,4 @@
-package akkaNetwork
+package akkanetwork
 
 import akka.actor.ActorContext
 import akka.actor.ActorSelection

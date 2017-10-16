@@ -1,4 +1,4 @@
-package akkaNetwork
+package akkanetwork
 
 class AkkaConstants {
     companion object {
