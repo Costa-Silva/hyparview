@@ -1,7 +1,6 @@
 package partialView
+import akkaNetwork.NodeID
 
-import NodeID
-import akka.actor.ActorSystem
-
-class PartialView(myID: NodeID, contactNode: NodeID, fanout: Int, system: ActorSystem) {
+data class PartialView(var activeView: MutableSet<NodeID> = mutableSetOf(),
+                       var passiveView: MutableSet<NodeID> = mutableSetOf()) {
 }

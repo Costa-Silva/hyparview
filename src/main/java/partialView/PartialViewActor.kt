@@ -1,15 +1,12 @@
 package partialView
 
-import AkkaConstants
-import AkkaUtils
-import NodeID
+import akkaNetwork.AkkaConstants
+import akkaNetwork.AkkaUtils
+import akkaNetwork.NodeID
 import akka.actor.AbstractActor
 import akka.actor.Props
 
 class PartialViewActor(myID: NodeID, contactNode: NodeID, fanout: Int): AbstractActor() {
-
-    private var activeView: MutableSet<NodeID> = mutableSetOf()
-    private var passiveView: MutableSet<NodeID> = mutableSetOf()
 
     companion object {
         fun props(myID: NodeID, contactNode: NodeID, fanout: Int): Props {
@@ -18,7 +15,8 @@ class PartialViewActor(myID: NodeID, contactNode: NodeID, fanout: Int): Abstract
     }
 
     init {
-        val contact = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, contactNode, AkkaConstants.CONTACT_NODE)
+        val contact = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, contactNode,
+                AkkaConstants.CONTACT_NODE)
         contact.tell(AkkaConstants.JOIN_MESSAGE, self)
     }
 

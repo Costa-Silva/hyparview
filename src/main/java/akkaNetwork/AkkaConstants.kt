@@ -1,3 +1,5 @@
+package akkaNetwork
+
 class AkkaConstants {
     companion object {
         const val JOIN_MESSAGE = "JOIN"
