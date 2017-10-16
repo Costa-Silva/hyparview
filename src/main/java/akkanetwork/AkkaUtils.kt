@@ -8,5 +8,8 @@ class AkkaUtils {
         fun lookUpRemote(context: ActorContext, systemName: String, ip: NodeID, NodeName: String): ActorSelection {
             return context.actorSelection("akka.tcp://$systemName@$ip/user/$NodeName")
         }
+        fun nodeIDFromPath(): NodeID? {
+            return null
+        }
     }
 }

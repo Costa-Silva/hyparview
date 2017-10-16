@@ -1,8 +1,9 @@
+
 import akka.actor.ActorSystem
 import akkaNetwork.AkkaConstants
 import akkaNetwork.NodeID
 import com.typesafe.config.ConfigFactory
-import partialView.PartialViewActor
+import partialview.PartialViewActor
 
 fun main(args: Array<String>) {
     val system = ActorSystem.create(AkkaConstants.SYSTEM_NAME, ConfigFactory.load("contact"))
