@@ -5,13 +5,15 @@ import akka.actor.Props
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
+import partialview.messages.ForwardJoinMessage
+import partialview.messages.JoinMessage
 
-class PartialViewActor(val myID: NodeID,val contactNode: NodeID, val fanout: Int,
+class PartialViewActor(contactNode: NodeID, val fanout: Int,
                        val partialView: PartialView = PartialView()) : AbstractActor() {
 
     companion object {
-        fun props(myID: NodeID, contactNode: NodeID, fanout: Int): Props {
-            return Props.create(PartialViewActor::class.java) { PartialViewActor(myID, contactNode, fanout)}
+        fun props(contactNode: NodeID, fanout: Int): Props {
+            return Props.create(PartialViewActor::class.java) { PartialViewActor(contactNode, fanout)}
         }
     }
 
@@ -19,19 +21,31 @@ class PartialViewActor(val myID: NodeID,val contactNode: NodeID, val fanout: Int
         val contact = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, contactNode,
                 AkkaConstants.CONTACT_NODE)
 
-        contact.tell(JoinMessage(myID), self)
+        contact.tell(JoinMessage(), self)
     }
 
     override fun createReceive(): Receive {
         return receiveBuilder()
-                .match(JoinMessage::class.java) { message ->
-                    partialView.activeView.put(message.newNode, sender.path())
+                .match(JoinMessage::class.java) { _ ->
+                    partialView.activeView.add(sender.path())
                     // comNewNode
-                    partialView.activeView.filter { it.component1() != message.newNode }
-                            .forEach {
-                                val actor = context.actorSelection(it.value)
-                                //actor.tell(,,)
-                            }
-                }.build()
+                    partialView.activeView.forEach {
+                        if (it != sender.path()) {
+                            val actor = context.actorSelection(it)
+                            actor.tell(ForwardJoinMessage(sender.path(), PVHelpers.ARWL), self)
+                        }
+                    }
+                }.match(ForwardJoinMessage::class.java) { message ->
+                if (message.timeToLive == 0 || partialView.activeView.size == 1) {
+                    partialView.activeView.add(message.newNode)
+                } else {
+                    if(message.timeToLive == PVHelpers.PRWL) {
+                        partialView.passiveView.add(message.newNode)
+                    }
+                    val randomNeighbor = PVHelpers.chooseRandom(partialView.activeView, sender.path())
+                    val actor = context.actorSelection(randomNeighbor)
+                    actor.tell(ForwardJoinMessage(message.newNode, message.timeToLive - 1), self)
+                }
+        }.build()
     }
 }
