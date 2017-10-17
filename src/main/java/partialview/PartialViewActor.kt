@@ -10,18 +10,21 @@ import partialview.messages.DisconnectMessage
 import partialview.messages.ForwardJoinMessage
 import partialview.messages.JoinMessage
 
-class PartialViewActor(contactNode: NodeID, val fanout: Int,
+class PartialViewActor(contactNode: NodeID, contact: Boolean, val fanout: Int,
                        val partialView: PartialView = PartialView()) : AbstractActor() {
 
     companion object {
-        fun props(contactNode: NodeID, fanout: Int): Props {
-            return Props.create(PartialViewActor::class.java) { PartialViewActor(contactNode, fanout)}
+        fun props(contactNode: NodeID, contact: Boolean, fanout: Int): Props {
+            return Props.create(PartialViewActor::class.java) { PartialViewActor(contactNode, contact, fanout)}
         }
     }
 
     init {
-        val contact = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, contactNode, AkkaConstants.CONTACT_NODE)
-        contact.tell(JoinMessage(), self)
+        val contactNode = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, contactNode, AkkaConstants.CONTACT_NODE)
+        // Ignore when it's the contact node joining the system
+        if(!contact) {
+            contactNode.tell(JoinMessage(), self)
+        }
     }
 
     override fun createReceive(): Receive {
