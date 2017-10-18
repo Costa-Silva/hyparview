@@ -28,8 +28,7 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
     }
 
     fun DiscoverContactRefMessageReceived(sender: ActorRef) {
-        if (!activeView.contains(sender))
-            activeView.add(sender)
+        viewsOperations.addNodeActiveView(sender)
     }
 
     fun forwardJoinReceived(timeToLive: Int, newNode: ActorRef, sender: ActorRef) {
