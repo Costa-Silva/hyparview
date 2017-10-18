@@ -5,25 +5,27 @@ import akka.actor.ActorPath
 import akka.actor.Props
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
+import akkanetwork.AkkaUtils.Companion.chooseRandom
+import akkanetwork.AkkaUtils.Companion.chooseRandomWithout
 import akkanetwork.NodeID
 import partialview.messages.DisconnectMessage
 import partialview.messages.ForwardJoinMessage
 import partialview.messages.JoinMessage
 
-class PartialViewActor(contactNode: NodeID, contact: Boolean, val fanout: Int,
+class PartialViewActor(contactNode: NodeID?, val fanout: Int,
                        val partialView: PartialView = PartialView()) : AbstractActor() {
 
     companion object {
-        fun props(contactNode: NodeID, contact: Boolean, fanout: Int): Props {
-            return Props.create(PartialViewActor::class.java) { PartialViewActor(contactNode, contact, fanout)}
+        fun props(contactNode: NodeID?, fanout: Int): Props {
+            return Props.create(PartialViewActor::class.java) { PartialViewActor(contactNode, fanout)}
         }
     }
 
     init {
-        val contactNode = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, contactNode, AkkaConstants.CONTACT_NODE)
         // Ignore when it's the contact node joining the system
-        if(!contact) {
-            contactNode.tell(JoinMessage(), self)
+        if(contactNode != null) {
+            val contactRemote = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, contactNode, contactNode.identifier)
+            contactRemote.tell(JoinMessage(), self)
         }
     }
 
@@ -53,7 +55,7 @@ class PartialViewActor(contactNode: NodeID, contact: Boolean, val fanout: Int,
             if(timeToLive == PVHelpers.PRWL) {
                 addNodePassiveView(newNode)
             }
-            val randomNeighbor = PVHelpers.chooseRandomWithout(sender.path(), partialView.activeView)
+            val randomNeighbor = chooseRandomWithout(sender.path(), partialView.activeView)
             val actor = context.actorSelection(randomNeighbor)
             actor.tell(ForwardJoinMessage(newNode, timeToLive - 1), self)
         }
@@ -79,14 +81,14 @@ class PartialViewActor(contactNode: NodeID, contact: Boolean, val fanout: Int,
         if(nodePath != self.path() && !partialView.activeView.contains(nodePath) &&
                 !partialView.passiveView.contains(nodePath)) {
             if(PVHelpers.passiveViewisFull(partialView.passiveView)) {
-                partialView.passiveView.remove(PVHelpers.chooseRandom(partialView.passiveView))
+                partialView.passiveView.remove(chooseRandom(partialView.passiveView))
             }
             partialView.passiveView.add(nodePath)
         }
     }
 
     fun dropRandomElementFromActiveView() {
-        val nodePath = PVHelpers.chooseRandom(partialView.activeView)
+        val nodePath = chooseRandom(partialView.activeView)
         val actor = context.actorSelection(nodePath)
         actor.tell(DisconnectMessage(), self)
         partialView.activeView.remove(nodePath)
