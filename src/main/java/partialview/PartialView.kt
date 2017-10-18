@@ -1,4 +1,5 @@
 package partialview
+import akka.actor.ActorContext
 import akka.actor.ActorRef
 import akkanetwork.AkkaUtils
 import partialview.crashrecoveryprotocol.CrashRecovery
@@ -10,9 +11,10 @@ import partialview.messages.ForwardJoinMessage
 
 data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSetOf(),
                        private var passiveView: MutableSet<ActorRef> = mutableSetOf(),
+                       private var context: ActorContext,
                        private var self: ActorRef){
 
-    private var viewsOperations = ViewsOperations(activeView, passiveView, self)
+    private var viewsOperations = ViewsOperations(activeView, passiveView, self, context)
     private var crashRecovery = CrashRecovery(activeView, passiveView, self, viewsOperations)
 
     fun JoinReceived(sender: ActorRef) {
@@ -44,8 +46,7 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
 
     fun disconnectReceived(sender: ActorRef) {
         if (activeView.contains(sender)){
-            activeView.remove(sender)
-            viewsOperations.addNodePassiveView(sender)
+            viewsOperations.activeToPassive(sender)
         }
     }
 

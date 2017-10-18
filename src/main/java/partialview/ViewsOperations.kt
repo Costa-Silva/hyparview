@@ -1,12 +1,14 @@
 package partialview
 
+import akka.actor.ActorContext
 import akka.actor.ActorRef
 import akkanetwork.AkkaUtils
 import partialview.messages.DisconnectMessage
 
 class ViewsOperations(private var activeView: MutableSet<ActorRef>,
                       private var passiveView: MutableSet<ActorRef>,
-                      private var self: ActorRef) {
+                      private var self: ActorRef,
+                      private var context: ActorContext) {
 
 
     fun addNodeActiveView(node: ActorRef) {
@@ -14,6 +16,7 @@ class ViewsOperations(private var activeView: MutableSet<ActorRef>,
             if(PVHelpers.activeViewisFull(activeView)) {
                 dropRandomElementFromActiveView()
             }
+            context.watch(node)
             activeView.add(node)
         }
     }
@@ -34,14 +37,17 @@ class ViewsOperations(private var activeView: MutableSet<ActorRef>,
     }
 
     fun activeToPassive(node: ActorRef) {
-        activeView.remove(node)
+        removeFromActive(node)
         addNodePassiveView(node)
     }
 
+    fun removeFromActive(node: ActorRef) {
+        activeView.remove(node)
+        context.unwatch(node)
+    }
     private fun dropRandomElementFromActiveView() {
         val node = AkkaUtils.chooseRandom(activeView)
         node.tell(DisconnectMessage(), self)
-        activeView.remove(node)
-        passiveView.add(node)
+        activeToPassive(node)
     }
 }

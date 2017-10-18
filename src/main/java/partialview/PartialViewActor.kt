@@ -2,6 +2,7 @@ package partialview
 
 import akka.actor.AbstractActor
 import akka.actor.Props
+import akka.actor.Terminated
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
@@ -11,7 +12,7 @@ import partialview.messages.*
 
 class PartialViewActor(contactNode: NodeID?, val fanout: Int) : AbstractActor() {
 
-    private val partialView: PartialView = PartialView(self = self)
+    private val partialView: PartialView = PartialView(context= context, self = self)
 
     companion object {
         fun props(contactNode: NodeID?, fanout: Int): Props {
@@ -29,6 +30,7 @@ class PartialViewActor(contactNode: NodeID?, val fanout: Int) : AbstractActor() 
 
     override fun createReceive(): Receive {
         return receiveBuilder()
+                .match(Terminated::class.java) { partialView.crashed(it.actor) }
                 .match(JoinMessage::class.java) { partialView.JoinReceived(sender) }
                 .match(DiscoverContactRefMessage::class.java) { partialView.DiscoverContactRefMessageReceived(sender) }
                 .match(ForwardJoinMessage::class.java) { partialView.forwardJoinReceived(it.timeToLive, it.newNode, sender) }

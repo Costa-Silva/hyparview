@@ -13,7 +13,7 @@ class CrashRecovery(private var activeView: MutableSet<ActorRef>,
                     private var viewsOperations : ViewsOperations) {
 
     fun crashed(node: ActorRef) {
-        activeView.remove(node)
+        viewsOperations.removeFromActive(node)
         val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
         val actor = AkkaUtils.chooseRandom(passiveView)
         actor.tell(HelpMeMessage(priority), self)
