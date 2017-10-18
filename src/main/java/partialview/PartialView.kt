@@ -2,6 +2,7 @@ package partialview
 import akka.actor.ActorRef
 import akkanetwork.AkkaUtils
 import partialview.messages.DisconnectMessage
+import partialview.messages.DiscoverContactRefMessage
 import partialview.messages.ForwardJoinMessage
 
 data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSetOf(),
@@ -10,6 +11,7 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
 
 
     fun JoinReceived(sender: ActorRef) {
+        sender.tell(DiscoverContactRefMessage(), self)
         addNodeActiveView(sender)
         // TODO: Global new node
         activeView.forEach {
@@ -17,6 +19,11 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
                 it.tell(ForwardJoinMessage(sender, PVHelpers.ARWL), self)
             }
         }
+    }
+
+    fun DiscoverContactRefMessageReceived(sender: ActorRef) {
+        if (!activeView.contains(sender))
+            activeView.add(sender)
     }
 
     fun forwardJoinReceived(timeToLive: Int, newNode: ActorRef, sender: ActorRef) {
@@ -37,7 +44,6 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
             addNodePassiveView(sender)
         }
     }
-
 
     fun addNodeActiveView(node: ActorRef) {
         if(node != self.path() && !activeView.contains(node)) {

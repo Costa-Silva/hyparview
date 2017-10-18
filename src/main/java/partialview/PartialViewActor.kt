@@ -6,6 +6,7 @@ import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
 import partialview.messages.DisconnectMessage
+import partialview.messages.DiscoverContactRefMessage
 import partialview.messages.ForwardJoinMessage
 import partialview.messages.JoinMessage
 
@@ -30,6 +31,7 @@ class PartialViewActor(contactNode: NodeID?, val fanout: Int) : AbstractActor() 
     override fun createReceive(): Receive {
         return receiveBuilder()
                 .match(JoinMessage::class.java) { partialView.JoinReceived(sender) }
+                .match(DiscoverContactRefMessage::class.java) { partialView.DiscoverContactRefMessageReceived(sender) }
                 .match(ForwardJoinMessage::class.java) { partialView.forwardJoinReceived(it.timeToLive, it.newNode, sender) }
                 .match(DisconnectMessage::class.java) { partialView.disconnectReceived(sender)}
                 .build()
