@@ -4,6 +4,7 @@ import akkanetwork.AkkaUtils
 import partialview.messages.DisconnectMessage
 import partialview.messages.DiscoverContactRefMessage
 import partialview.messages.ForwardJoinMessage
+import partialview.messages.Message
 
 data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSetOf(),
                        private var passiveView: MutableSet<ActorRef> = mutableSetOf(),
@@ -68,5 +69,11 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
         node.tell(DisconnectMessage(), self)
         activeView.remove(node)
         passiveView.add(node)
+    }
+
+    fun broadcast(message: Message) {
+        activeView.forEach{
+            it.tell(message, self)
+        }
     }
 }
