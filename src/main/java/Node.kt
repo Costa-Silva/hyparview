@@ -7,6 +7,7 @@ import partialview.PartialViewActor
 import java.util.*
 
 fun main(args: Array<String>) {
+    // VS ask for MY_NODE_ID and Contact node
     if (args.size != 1) {
         System.err.println("Invalid number of args.\nUSAGE: MY_NODE_ID")
         System.err.println("Check application.conf for MY_NODE_ID")
