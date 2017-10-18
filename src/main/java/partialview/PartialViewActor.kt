@@ -5,10 +5,9 @@ import akka.actor.Props
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
-import partialview.messages.DisconnectMessage
-import partialview.messages.DiscoverContactRefMessage
-import partialview.messages.ForwardJoinMessage
-import partialview.messages.JoinMessage
+import partialview.crashrecoveryprotocol.messages.HelpMeMessage
+import partialview.crashrecoveryprotocol.messages.HelpMeResponseMessage
+import partialview.messages.*
 
 class PartialViewActor(contactNode: NodeID?, val fanout: Int) : AbstractActor() {
 
@@ -34,6 +33,11 @@ class PartialViewActor(contactNode: NodeID?, val fanout: Int) : AbstractActor() 
                 .match(DiscoverContactRefMessage::class.java) { partialView.DiscoverContactRefMessageReceived(sender) }
                 .match(ForwardJoinMessage::class.java) { partialView.forwardJoinReceived(it.timeToLive, it.newNode, sender) }
                 .match(DisconnectMessage::class.java) { partialView.disconnectReceived(sender)}
+                .match(BroadcastMessage::class.java) { partialView.broadcastReceived(it, sender) }
+                .match(HelpMeMessage::class.java) { partialView.helpMeReceived(it.requestUUID, it.priority, sender) }
+                .match(HelpMeResponseMessage::class.java) { partialView.helpMeResponseReceived(it.requestUUID, it.result, sender)}
                 .build()
     }
+
+    fun broadcast(message: BroadcastMessage) { partialView.broadcast(message) }
 }
