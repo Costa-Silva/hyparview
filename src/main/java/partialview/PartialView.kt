@@ -7,7 +7,6 @@ import partialview.crashrecoveryprotocol.Priority
 import partialview.messages.BroadcastMessage
 import partialview.messages.DiscoverContactRefMessage
 import partialview.messages.ForwardJoinMessage
-import java.util.*
 
 data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSetOf(),
                        private var passiveView: MutableSet<ActorRef> = mutableSetOf(),
@@ -61,16 +60,14 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
     }
 
     fun crashed(node: ActorRef) {
-        activeView.remove(node)
-        val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
-        crashRecovery.getNewActiveNode(priority)
+        crashRecovery.crashed(node)
     }
 
-    fun helpMeReceived(requestUUID: UUID, priority: Priority, sender: ActorRef) {
-        crashRecovery.helpMeReceived(requestUUID, priority, sender)
+    fun helpMeReceived(priority: Priority, sender: ActorRef) {
+        crashRecovery.helpMeReceived(priority, sender)
     }
 
-    fun helpMeResponseReceived(requestUUID: UUID, result: HelpResult, sender: ActorRef) {
-        crashRecovery.helpMeResponseReceived(requestUUID, result, sender)
+    fun helpMeResponseReceived(result: HelpResult, sender: ActorRef) {
+        crashRecovery.helpMeResponseReceived(result, sender)
     }
 }

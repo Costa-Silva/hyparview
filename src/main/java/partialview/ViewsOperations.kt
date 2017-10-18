@@ -27,6 +27,17 @@ class ViewsOperations(private var activeView: MutableSet<ActorRef>,
         }
     }
 
+
+    fun passiveToActive(node: ActorRef) {
+        passiveView.remove(node)
+        addNodeActiveView(node)
+    }
+
+    fun activeToPassive(node: ActorRef) {
+        activeView.remove(node)
+        addNodePassiveView(node)
+    }
+
     private fun dropRandomElementFromActiveView() {
         val node = AkkaUtils.chooseRandom(activeView)
         node.tell(DisconnectMessage(), self)

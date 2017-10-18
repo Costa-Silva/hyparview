@@ -34,8 +34,8 @@ class PartialViewActor(contactNode: NodeID?, val fanout: Int) : AbstractActor() 
                 .match(ForwardJoinMessage::class.java) { partialView.forwardJoinReceived(it.timeToLive, it.newNode, sender) }
                 .match(DisconnectMessage::class.java) { partialView.disconnectReceived(sender)}
                 .match(BroadcastMessage::class.java) { partialView.broadcastReceived(it, sender) }
-                .match(HelpMeMessage::class.java) { partialView.helpMeReceived(it.requestUUID, it.priority, sender) }
-                .match(HelpMeResponseMessage::class.java) { partialView.helpMeResponseReceived(it.requestUUID, it.result, sender)}
+                .match(HelpMeMessage::class.java) { partialView.helpMeReceived(it.priority, sender) }
+                .match(HelpMeResponseMessage::class.java) { partialView.helpMeResponseReceived(it.result, sender)}
                 .build()
     }
 
