@@ -20,7 +20,6 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
     }
 
     fun forwardJoinReceived(timeToLive: Int, newNode: ActorRef, sender: ActorRef) {
-
         if (timeToLive == 0 || activeView.size == 1) {
             addNodeActiveView(newNode)
         } else {

@@ -22,6 +22,7 @@ fun main(args: Array<String>) {
     // Discover contact info logic
     if(myIdentifier != "node0") {
         val contactID = "node${Random().nextInt(Integer.parseInt(myIdentifier.split("node")[1]))}"
+
         contactNode = NodeID(config.getString("nodes.ip.$contactID"), config.getString("nodes.port.$contactID"), contactID)
     }
     val nodeRef = system.actorOf(PartialViewActor.props(contactNode ,5), myIdentifier)
