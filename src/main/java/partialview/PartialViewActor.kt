@@ -5,7 +5,6 @@ import akka.actor.ActorPath
 import akka.actor.Props
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
-import akkanetwork.AkkaUtils.Companion.chooseRandom
 import akkanetwork.AkkaUtils.Companion.chooseRandomWithout
 import akkanetwork.NodeID
 import partialview.messages.DisconnectMessage
@@ -37,8 +36,8 @@ class PartialViewActor(contactNode: NodeID?, val fanout: Int,
                 .build()
     }
 
-    fun JoinReceived() {
-        addNodeActiveView(sender.path())
+    private fun JoinReceived() {
+        partialView.addNodeActiveView(sender.path(), self, context)
         // TODO: Global new node
         partialView.activeView.forEach {
             if (it != sender.path()) {
@@ -48,12 +47,12 @@ class PartialViewActor(contactNode: NodeID?, val fanout: Int,
         }
     }
 
-    fun forwardJoinReceived(timeToLive: Int, newNode: ActorPath) {
+    private fun forwardJoinReceived(timeToLive: Int, newNode: ActorPath) {
         if (timeToLive == 0 || partialView.activeView.size == 1) {
-            addNodeActiveView(newNode)
+            partialView.addNodeActiveView(newNode, self, context)
         } else {
             if(timeToLive == PVHelpers.PRWL) {
-                addNodePassiveView(newNode)
+                partialView.addNodePassiveView(newNode, self)
             }
             val randomNeighbor = chooseRandomWithout(sender.path(), partialView.activeView)
             val actor = context.actorSelection(randomNeighbor)
@@ -61,37 +60,11 @@ class PartialViewActor(contactNode: NodeID?, val fanout: Int,
         }
     }
 
-    fun deleteReceived() {
+    private fun deleteReceived() {
         val nodePath = sender.path()
         if (partialView.activeView.contains(nodePath)){
             partialView.activeView.remove(nodePath)
-            addNodePassiveView(nodePath)
+            partialView.addNodePassiveView(nodePath, self)
         }
-    }
-
-    fun addNodeActiveView(nodePath: ActorPath) {
-        if(nodePath != self.path() && !partialView.activeView.contains(nodePath)) {
-            if(PVHelpers.activeViewisFull(partialView.activeView)) {
-                dropRandomElementFromActiveView()
-            }
-            partialView.activeView.add(nodePath)
-        }
-    }
-    fun addNodePassiveView(nodePath: ActorPath) {
-        if(nodePath != self.path() && !partialView.activeView.contains(nodePath) &&
-                !partialView.passiveView.contains(nodePath)) {
-            if(PVHelpers.passiveViewisFull(partialView.passiveView)) {
-                partialView.passiveView.remove(chooseRandom(partialView.passiveView))
-            }
-            partialView.passiveView.add(nodePath)
-        }
-    }
-
-    fun dropRandomElementFromActiveView() {
-        val nodePath = chooseRandom(partialView.activeView)
-        val actor = context.actorSelection(nodePath)
-        actor.tell(DisconnectMessage(), self)
-        partialView.activeView.remove(nodePath)
-        partialView.passiveView.add(nodePath)
     }
 }
