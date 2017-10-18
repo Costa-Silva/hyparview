@@ -1,7 +1,7 @@
 package akkanetwork
 
 import akka.actor.ActorContext
-import akka.actor.ActorPath
+import akka.actor.ActorRef
 import akka.actor.ActorSelection
 import java.util.*
 
@@ -10,7 +10,7 @@ class AkkaUtils {
         fun lookUpRemote(context: ActorContext, systemName: String, ip: NodeID, NodeName: String): ActorSelection {
             return context.actorSelection("akka.tcp://$systemName@$ip/user/$NodeName")
         }
-        fun chooseRandomWithout(withoutElement: ActorPath, set: Set<ActorPath>): ActorPath {
+        fun chooseRandomWithout(withoutElement: ActorRef, set: Set<ActorRef>): ActorRef {
             var randomElement = withoutElement
             while ( randomElement == withoutElement ) {
                 randomElement = chooseRandom(set)
@@ -18,7 +18,7 @@ class AkkaUtils {
             return randomElement
         }
 
-        fun chooseRandom(set: Set<ActorPath>): ActorPath {
+        fun chooseRandom(set: Set<ActorRef>): ActorRef {
             return set.elementAt(Random().nextInt(set.size))
         }
     }

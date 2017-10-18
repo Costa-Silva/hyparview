@@ -1,18 +1,17 @@
 package partialview
 
 import akka.actor.AbstractActor
-import akka.actor.ActorPath
 import akka.actor.Props
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
-import akkanetwork.AkkaUtils.Companion.chooseRandomWithout
 import akkanetwork.NodeID
 import partialview.messages.DisconnectMessage
 import partialview.messages.ForwardJoinMessage
 import partialview.messages.JoinMessage
 
-class PartialViewActor(contactNode: NodeID?, val fanout: Int,
-                       val partialView: PartialView = PartialView()) : AbstractActor() {
+class PartialViewActor(contactNode: NodeID?, val fanout: Int) : AbstractActor() {
+
+    private val partialView: PartialView = PartialView(self = self)
 
     companion object {
         fun props(contactNode: NodeID?, fanout: Int): Props {
@@ -30,41 +29,9 @@ class PartialViewActor(contactNode: NodeID?, val fanout: Int,
 
     override fun createReceive(): Receive {
         return receiveBuilder()
-                .match(JoinMessage::class.java) { JoinReceived() }
-                .match(ForwardJoinMessage::class.java) { forwardJoinReceived(it.timeToLive, it.newNode) }
-                .match(DisconnectMessage::class.java) { deleteReceived()}
+                .match(JoinMessage::class.java) { partialView.JoinReceived(sender) }
+                .match(ForwardJoinMessage::class.java) { partialView.forwardJoinReceived(it.timeToLive, it.newNode, sender) }
+                .match(DisconnectMessage::class.java) { partialView.disconnectReceived(sender)}
                 .build()
-    }
-
-    private fun JoinReceived() {
-        partialView.addNodeActiveView(sender.path(), self, context)
-        // TODO: Global new node
-        partialView.activeView.forEach {
-            if (it != sender.path()) {
-                val actor = context.actorSelection(it)
-                actor.tell(ForwardJoinMessage(sender.path(), PVHelpers.ARWL), self)
-            }
-        }
-    }
-
-    private fun forwardJoinReceived(timeToLive: Int, newNode: ActorPath) {
-        if (timeToLive == 0 || partialView.activeView.size == 1) {
-            partialView.addNodeActiveView(newNode, self, context)
-        } else {
-            if(timeToLive == PVHelpers.PRWL) {
-                partialView.addNodePassiveView(newNode, self)
-            }
-            val randomNeighbor = chooseRandomWithout(sender.path(), partialView.activeView)
-            val actor = context.actorSelection(randomNeighbor)
-            actor.tell(ForwardJoinMessage(newNode, timeToLive - 1), self)
-        }
-    }
-
-    private fun deleteReceived() {
-        val nodePath = sender.path()
-        if (partialView.activeView.contains(nodePath)){
-            partialView.activeView.remove(nodePath)
-            partialView.addNodePassiveView(nodePath, self)
-        }
     }
 }
