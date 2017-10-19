@@ -1,4 +1,4 @@
-package partialview.crashrecoveryprotocol
+package partialview.protocols.crashrecovery
 
 import java.io.Serializable
 

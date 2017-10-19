@@ -5,7 +5,7 @@ import akka.actor.ActorRef
 import akkanetwork.AkkaUtils
 import partialview.messages.DisconnectMessage
 
-class ViewsOperations(private var activeView: MutableSet<ActorRef>,
+class MembershipOperations(private var activeView: MutableSet<ActorRef>,
                       private var passiveView: MutableSet<ActorRef>,
                       private var self: ActorRef,
                       private var context: ActorContext) {
@@ -20,8 +20,6 @@ class ViewsOperations(private var activeView: MutableSet<ActorRef>,
             addToWatchSet(node)
             activeView.add(node)
         }
-
-        println("minha lista activa: $activeView")
     }
 
     fun addNodePassiveView(node: ActorRef) {
@@ -37,7 +35,6 @@ class ViewsOperations(private var activeView: MutableSet<ActorRef>,
             addToWatchSet(node)
             passiveView.add(node)
         }
-        println("minha lista passiva: $passiveView")
     }
 
     fun passiveToActive(node: ActorRef) {

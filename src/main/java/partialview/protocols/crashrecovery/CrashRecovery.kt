@@ -1,29 +1,28 @@
-package partialview.crashrecoveryprotocol
+package partialview.protocols.crashrecovery
 
 import akka.actor.ActorRef
 import akkanetwork.AkkaUtils
+import partialview.MembershipOperations
 import partialview.PVHelpers
-import partialview.ViewsOperations
-import partialview.crashrecoveryprotocol.messages.HelpMeMessage
-import partialview.crashrecoveryprotocol.messages.HelpMeResponseMessage
+import partialview.protocols.crashrecovery.messages.HelpMeMessage
+import partialview.protocols.crashrecovery.messages.HelpMeReplyMessage
 
 class CrashRecovery(private var activeView: MutableSet<ActorRef>,
                     private var passiveView: MutableSet<ActorRef>,
                     private var self: ActorRef,
-                    private var viewsOperations : ViewsOperations) {
+                    private var membershipOperations: MembershipOperations) {
 
     var deadNodesFromPassive = mutableSetOf<ActorRef>()
 
     fun crashed(node: ActorRef) {
-        println("o node: ${node.path()} morreu")
         if(activeView.contains(node)) {
-            viewsOperations.nodeFailedSoRemoveFromActive(node)
+            membershipOperations.nodeFailedSoRemoveFromActive(node)
             val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
             var actor = AkkaUtils.chooseRandom(passiveView)
 
                 while(deadNodesFromPassive.contains(actor)) {
                     deadNodesFromPassive.remove(actor)
-                    viewsOperations.nodeFailedSoRemoveFromPassive(actor)
+                    membershipOperations.nodeFailedSoRemoveFromPassive(actor)
                     actor = AkkaUtils.chooseRandom(passiveView)
                 }
 
@@ -39,19 +38,19 @@ class CrashRecovery(private var activeView: MutableSet<ActorRef>,
         // when 2 or more nodes fail and this node receives all those requests without notifying on time that node
         // (we can only accept 1 to join our active view)
         if(activeView.contains(sender)) {
-            sender.tell(HelpMeResponseMessage(result), self)
+            sender.tell(HelpMeReplyMessage(result), self)
         } else {
             if(priority == Priority.HIGH || !PVHelpers.activeViewisFull(activeView)) {
-                viewsOperations.passiveToActive(sender)
+                membershipOperations.passiveToActive(sender)
                 result = HelpResult.ACCEPTED
             }
-            sender.tell(HelpMeResponseMessage(result), self)
+            sender.tell(HelpMeReplyMessage(result), self)
         }
     }
 
     fun helpMeResponseReceived(result: HelpResult, sender: ActorRef) {
         if (result == HelpResult.ACCEPTED) {
-            viewsOperations.passiveToActive(sender)
+            membershipOperations.passiveToActive(sender)
         } else {
             val actor = AkkaUtils.chooseRandomWithout(sender, passiveView)
             val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW

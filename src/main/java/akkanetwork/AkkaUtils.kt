@@ -10,8 +10,22 @@ class AkkaUtils {
         fun lookUpRemote(context: ActorContext, systemName: String, ip: NodeID, NodeName: String): ActorSelection {
             return context.actorSelection("akka.tcp://$systemName@$ip/user/$NodeName")
         }
+
+        fun chooseRandomWithout(values: Set<ActorRef>, set: Set<ActorRef>): ActorRef? {
+            if(set.size == values.size && set.containsAll(values) || (set.size < values.size && values.containsAll(set))
+                    || set.isEmpty()) {
+                return null
+            }
+
+            var randomElement = chooseRandom(set)
+            while (values.contains(randomElement)) {
+                randomElement = chooseRandom(set)
+            }
+            return randomElement
+        }
+
         fun chooseRandomWithout(withoutElement: ActorRef, set: Set<ActorRef>): ActorRef? {
-            if(set.contains(withoutElement) && set.size == 1 ) {
+            if(set.size == 1 && set.contains(withoutElement)) {
                 return null
             }
 

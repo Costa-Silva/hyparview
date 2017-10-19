@@ -6,9 +6,11 @@ import akka.actor.Terminated
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
-import partialview.crashrecoveryprotocol.messages.HelpMeMessage
-import partialview.crashrecoveryprotocol.messages.HelpMeResponseMessage
 import partialview.messages.*
+import partialview.protocols.crashrecovery.messages.HelpMeMessage
+import partialview.protocols.crashrecovery.messages.HelpMeReplyMessage
+import partialview.protocols.suffle.messages.ShuffleMessage
+import partialview.protocols.suffle.messages.ShuffleReplyMessage
 
 class PartialViewActor(contactNode: NodeID?, val fanout: Int) : AbstractActor() {
 
@@ -37,7 +39,9 @@ class PartialViewActor(contactNode: NodeID?, val fanout: Int) : AbstractActor() 
                 .match(DisconnectMessage::class.java) { partialView.disconnectReceived(sender)}
                 .match(BroadcastMessage::class.java) { partialView.broadcastReceived(it, sender) }
                 .match(HelpMeMessage::class.java) { partialView.helpMeReceived(it.priority, sender) }
-                .match(HelpMeResponseMessage::class.java) { partialView.helpMeResponseReceived(it.result, sender)}
+                .match(HelpMeReplyMessage::class.java) { partialView.helpMeResponseReceived(it.result, sender) }
+                .match(ShuffleMessage::class.java) { partialView.shuffleReceived(it.sample, it.timeToLive, it.uuid, it.origin, sender) }
+                .match(ShuffleReplyMessage::class.java) { partialView.shuffleReplyReceived(it.sample, it.uuid) }
                 .build()
     }
 
