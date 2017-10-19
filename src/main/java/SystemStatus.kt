@@ -26,7 +26,7 @@ class SystemStatus(pvWrapper: PVDependenciesWrapper) {
     }
 
     private fun printOptions(){
-        println("PartialView Configs.")
+        println("\nPartialView Configs.")
         println("1)Active View max size -> 0.1")
         println("2)Passive View max size -> 0.2")
 
@@ -34,6 +34,6 @@ class SystemStatus(pvWrapper: PVDependenciesWrapper) {
         println("1)Contact node -> 1.1")
         println("2)Active View -> 1.2")
         println("3)Passive View -> 1.3")
-        printErr("\nType here:")
+        println("\n\nType here:")
     }
 }
