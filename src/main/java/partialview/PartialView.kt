@@ -1,4 +1,5 @@
 package partialview
+import PVDependenciesWrapper
 import akka.actor.ActorContext
 import akka.actor.ActorRef
 import partialview.PVHelpers.Companion.TTSHUFFLE_MS
@@ -10,15 +11,12 @@ import partialview.protocols.membership.messages.BroadcastMessage
 import partialview.protocols.suffle.Shuffle
 import java.util.*
 
-data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSetOf(),
-                       private var passiveView: MutableSet<ActorRef> = mutableSetOf(),
-                       private var context: ActorContext,
-                       private var self: ActorRef) {
+class PartialView(private val pvWrapper: PVDependenciesWrapper, context: ActorContext, private var self: ActorRef) {
 
-    private var viewOperations = ViewOperations(activeView, passiveView, self, context)
-    private var crashRecovery = CrashRecovery(activeView, passiveView, self, viewOperations)
-    private var shuffle = Shuffle(activeView, passiveView, self)
-    private var membership = Membership(activeView, passiveView, viewOperations, self)
+    private var viewOperations = ViewOperations(pvWrapper.activeView, pvWrapper.passiveView, self, context)
+    private var crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, self, viewOperations)
+    private var shuffle = Shuffle(pvWrapper.activeView, pvWrapper.passiveView, self)
+    private var membership = Membership(pvWrapper.activeView, pvWrapper.passiveView, viewOperations, self)
 
     init {
         val task = object : TimerTask() {
@@ -28,7 +26,7 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
         }
         Timer().schedule(task ,0, TTSHUFFLE_MS)
     }
-    
+
     fun joinReceived(sender: ActorRef) {
         membership.joinReceived(sender)
     }
@@ -66,7 +64,7 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
     }
 
     fun broadcast(message: BroadcastMessage) {
-        activeView.forEach {
+        pvWrapper.activeView.forEach {
             it.tell(message, self)
         }
     }

@@ -1,31 +1,32 @@
 package partialview
 
+import PVDependenciesWrapper
 import akka.actor.AbstractActor
 import akka.actor.Props
 import akka.actor.Terminated
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
-import akkanetwork.NodeID
 import partialview.protocols.crashrecovery.messages.HelpMeMessage
 import partialview.protocols.crashrecovery.messages.HelpMeReplyMessage
 import partialview.protocols.membership.messages.*
 import partialview.protocols.suffle.messages.ShuffleMessage
 import partialview.protocols.suffle.messages.ShuffleReplyMessage
 
-class PartialViewActor(contactNode: NodeID?, val fanout: Int) : AbstractActor() {
+class PartialViewActor(pvWrapper: PVDependenciesWrapper) : AbstractActor() {
 
-    private val partialView: PartialView = PartialView(context= context, self = self)
+    private val partialView: PartialView = PartialView(pvWrapper, context, self)
 
     companion object {
-        fun props(contactNode: NodeID?, fanout: Int): Props {
-            return Props.create(PartialViewActor::class.java) { PartialViewActor(contactNode, fanout)}
+        fun props(pvWrapper: PVDependenciesWrapper): Props {
+            return Props.create(PartialViewActor::class.java) { PartialViewActor(pvWrapper)}
         }
     }
 
     init {
         // Ignore when it's the contact node joining the system
-        if(contactNode != null) {
-            val contactRemote = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, contactNode, contactNode.identifier)
+        if(pvWrapper.contactNode != null) {
+            val contactRemote = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, pvWrapper.contactNode,
+                    pvWrapper.contactNode.identifier)
             contactRemote.tell(JoinMessage(), self)
         }
     }

@@ -20,7 +20,6 @@ class ViewOperations(private var activeView: MutableSet<ActorRef>,
             addToWatchSet(node)
             activeView.add(node)
         }
-        System.err.println("ActiveView: $activeView")
     }
 
     fun addNodePassiveView(node: ActorRef) {
@@ -36,7 +35,6 @@ class ViewOperations(private var activeView: MutableSet<ActorRef>,
             addToWatchSet(node)
             passiveView.add(node)
         }
-        System.err.println("PassiveView: $passiveView")
     }
 
     fun passiveToActive(node: ActorRef) {

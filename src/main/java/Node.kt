@@ -1,5 +1,6 @@
 
 import akka.actor.ActorSystem
+import akkanetwork.AkkaConstants.Companion.FANOUT
 import akkanetwork.AkkaConstants.Companion.SYSTEM_NAME
 import akkanetwork.NodeID
 import com.typesafe.config.ConfigFactory
@@ -24,5 +25,8 @@ fun main(args: Array<String>) {
         val contactID = "node${Random().nextInt(Integer.parseInt(myIdentifier.split("node")[1]))}"
         contactNode = NodeID(config.getString("nodes.ip.$contactID"), config.getString("nodes.port.$contactID"), contactID)
     }
-    val nodeRef = system.actorOf(PartialViewActor.props(contactNode ,5), myIdentifier)
+
+    val pvWrapper = PVDependenciesWrapper(contactNode, FANOUT)
+    val nodeRef = system.actorOf(PartialViewActor.props(pvWrapper), myIdentifier)
+    SystemStatus(pvWrapper)
 }

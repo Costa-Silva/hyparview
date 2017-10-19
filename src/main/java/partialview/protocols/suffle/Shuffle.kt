@@ -56,7 +56,7 @@ class Shuffle(private var activeView: MutableSet<ActorRef>,
         val sumNodes = passiveView.size + sample.size
         val nodesToRemove = if(sumNodes > PASSIVE_VIEW_MAX_SIZE) (sumNodes-PASSIVE_VIEW_MAX_SIZE) else 0
         val removedNodes = mutableSetOf<ActorRef>()
-        for (i in 0 until nodesToRemove) {
+        for ( i in 0 until nodesToRemove) {
             var actor: ActorRef? = null
             while (actor == null || removedNodes.contains(actor)) {
                 actor = AkkaUtils.chooseRandomWithout(removedNodes, randomPassiveNodes)
@@ -77,11 +77,6 @@ class Shuffle(private var activeView: MutableSet<ActorRef>,
 
     private fun removeAlreadyKnownNodes(sample: MutableSet<ActorRef>) {
         sample.removeAll { it == self || activeView.contains(it) || passiveView.contains(it) }
-        /*
-        sample.remove(self)
-        activeView.forEach { sample.remove(it) }
-        passiveView.forEach { sample.remove(it) }
-        */
     }
 
     private fun populateSample(nodesToFind: Int, viewSet: Set<ActorRef>): MutableSet<ActorRef> {
