@@ -1,6 +1,5 @@
 package partialview
 
-import PVDependenciesWrapper
 import akka.actor.AbstractActor
 import akka.actor.Props
 import akka.actor.Terminated

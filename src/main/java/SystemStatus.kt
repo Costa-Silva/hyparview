@@ -1,3 +1,4 @@
+import partialview.PVDependenciesWrapper
 import partialview.PVHelpers
 
 class SystemStatus(pvWrapper: PVDependenciesWrapper) {

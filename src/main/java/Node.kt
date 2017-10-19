@@ -4,6 +4,7 @@ import akkanetwork.AkkaConstants.Companion.FANOUT
 import akkanetwork.AkkaConstants.Companion.SYSTEM_NAME
 import akkanetwork.NodeID
 import com.typesafe.config.ConfigFactory
+import partialview.PVDependenciesWrapper
 import partialview.PartialViewActor
 import java.util.*
 

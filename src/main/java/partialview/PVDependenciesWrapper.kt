@@ -1,3 +1,5 @@
+package partialview
+
 import akka.actor.ActorRef
 import akkanetwork.NodeID
 
