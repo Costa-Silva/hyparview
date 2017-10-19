@@ -8,7 +8,6 @@ import partialview.protocols.membership.messages.DiscoverContactRefMessage
 import partialview.protocols.membership.messages.ForwardJoinMessage
 
 class Membership(private var activeView: MutableSet<ActorRef> = mutableSetOf(),
-                 private var passiveView: MutableSet<ActorRef> = mutableSetOf(),
                  private var viewOperations: ViewOperations,
                  private var self: ActorRef) {
 
