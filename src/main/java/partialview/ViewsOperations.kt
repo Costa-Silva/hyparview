@@ -20,6 +20,8 @@ class ViewsOperations(private var activeView: MutableSet<ActorRef>,
             addToWatchSet(node)
             activeView.add(node)
         }
+
+        println("minha lista activa: $activeView")
     }
 
     fun addNodePassiveView(node: ActorRef) {
@@ -27,12 +29,15 @@ class ViewsOperations(private var activeView: MutableSet<ActorRef>,
                 !passiveView.contains(node)) {
             if(PVHelpers.passiveViewisFull(passiveView)) {
                 val actor = AkkaUtils.chooseRandom(passiveView)
-                passiveView.remove(actor)
-                removeFromWatchSet(actor)
+                if (actor != null) {
+                    passiveView.remove(actor)
+                    removeFromWatchSet(actor)
+                }
             }
             addToWatchSet(node)
             passiveView.add(node)
         }
+        println("minha lista passiva: $passiveView")
     }
 
     fun passiveToActive(node: ActorRef) {
@@ -50,15 +55,19 @@ class ViewsOperations(private var activeView: MutableSet<ActorRef>,
         removeFromWatchSet(node)
     }
 
-    fun nodeFailedSoRemoveFromPassive(node: ActorRef) {
-        passiveView.remove(node)
-        removeFromWatchSet(node)
+    fun nodeFailedSoRemoveFromPassive(node: ActorRef?) {
+        if (node != null ) {
+            passiveView.remove(node)
+            removeFromWatchSet(node)
+        }
     }
 
     private fun dropRandomElementFromActiveView() {
         val node = AkkaUtils.chooseRandom(activeView)
-        node.tell(DisconnectMessage(), self)
-        activeToPassive(node)
+        if (node != null) {
+            node.tell(DisconnectMessage(), self)
+            activeToPassive(node)
+        }
     }
 
     private fun addToWatchSet(node: ActorRef) {

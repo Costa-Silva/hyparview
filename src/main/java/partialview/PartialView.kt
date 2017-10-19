@@ -18,6 +18,7 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
     private var crashRecovery = CrashRecovery(activeView, passiveView, self, viewsOperations)
 
     fun JoinReceived(sender: ActorRef) {
+        println("recebi join de ${sender.path()}")
         sender.tell(DiscoverContactRefMessage(), self)
         viewsOperations.addNodeActiveView(sender)
         // TODO: Global new node
@@ -40,7 +41,7 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
                 viewsOperations.addNodePassiveView(newNode)
             }
             val randomNeighbor = AkkaUtils.chooseRandomWithout(sender, activeView)
-            randomNeighbor.tell(ForwardJoinMessage(newNode, timeToLive - 1), self)
+            randomNeighbor?.tell(ForwardJoinMessage(newNode, timeToLive - 1), self)
         }
     }
 

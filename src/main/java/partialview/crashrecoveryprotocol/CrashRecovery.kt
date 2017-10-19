@@ -15,18 +15,19 @@ class CrashRecovery(private var activeView: MutableSet<ActorRef>,
     var deadNodesFromPassive = mutableSetOf<ActorRef>()
 
     fun crashed(node: ActorRef) {
+        println("o node: ${node.path()} morreu")
         if(activeView.contains(node)) {
             viewsOperations.nodeFailedSoRemoveFromActive(node)
             val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
             var actor = AkkaUtils.chooseRandom(passiveView)
 
-            while(deadNodesFromPassive.contains(actor)) {
-                deadNodesFromPassive.remove(actor)
-                viewsOperations.nodeFailedSoRemoveFromPassive(actor)
-                actor = AkkaUtils.chooseRandom(passiveView)
-            }
-            actor.tell(HelpMeMessage(priority), self)
+                while(deadNodesFromPassive.contains(actor)) {
+                    deadNodesFromPassive.remove(actor)
+                    viewsOperations.nodeFailedSoRemoveFromPassive(actor)
+                    actor = AkkaUtils.chooseRandom(passiveView)
+                }
 
+                actor?.tell(HelpMeMessage(priority), self)
         } else {
             deadNodesFromPassive.add(node)
         }
@@ -54,7 +55,7 @@ class CrashRecovery(private var activeView: MutableSet<ActorRef>,
         } else {
             val actor = AkkaUtils.chooseRandomWithout(sender, passiveView)
             val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
-            actor.tell(HelpMeMessage(priority), self)
+            actor?.tell(HelpMeMessage(priority), self)
         }
     }
 }
