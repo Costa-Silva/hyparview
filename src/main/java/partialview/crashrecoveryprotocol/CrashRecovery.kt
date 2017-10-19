@@ -12,11 +12,24 @@ class CrashRecovery(private var activeView: MutableSet<ActorRef>,
                     private var self: ActorRef,
                     private var viewsOperations : ViewsOperations) {
 
+    var deadNodesFromPassive = mutableSetOf<ActorRef>()
+
     fun crashed(node: ActorRef) {
-        viewsOperations.removeFromActive(node)
-        val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
-        val actor = AkkaUtils.chooseRandom(passiveView)
-        actor.tell(HelpMeMessage(priority), self)
+        if(activeView.contains(node)) {
+            viewsOperations.nodeFailedSoRemoveFromActive(node)
+            val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
+            var actor = AkkaUtils.chooseRandom(passiveView)
+
+            while(deadNodesFromPassive.contains(actor)) {
+                deadNodesFromPassive.remove(actor)
+                viewsOperations.nodeFailedSoRemoveFromPassive(actor)
+                actor = AkkaUtils.chooseRandom(passiveView)
+            }
+            actor.tell(HelpMeMessage(priority), self)
+
+        } else {
+            deadNodesFromPassive.add(node)
+        }
     }
 
     fun helpMeReceived(priority: Priority, sender: ActorRef) {
@@ -37,7 +50,7 @@ class CrashRecovery(private var activeView: MutableSet<ActorRef>,
 
     fun helpMeResponseReceived(result: HelpResult, sender: ActorRef) {
         if (result == HelpResult.ACCEPTED) {
-            viewsOperations.activeToPassive(sender)
+            viewsOperations.passiveToActive(sender)
         } else {
             val actor = AkkaUtils.chooseRandomWithout(sender, passiveView)
             val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW

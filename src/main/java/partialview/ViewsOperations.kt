@@ -10,26 +10,30 @@ class ViewsOperations(private var activeView: MutableSet<ActorRef>,
                       private var self: ActorRef,
                       private var context: ActorContext) {
 
+    var watchSet = mutableSetOf<ActorRef>()
 
     fun addNodeActiveView(node: ActorRef) {
         if(node != self && !activeView.contains(node)) {
             if(PVHelpers.activeViewisFull(activeView)) {
                 dropRandomElementFromActiveView()
             }
-            context.watch(node)
+            addToWatchSet(node)
             activeView.add(node)
         }
     }
+
     fun addNodePassiveView(node: ActorRef) {
         if(node != self && !activeView.contains(node) &&
                 !passiveView.contains(node)) {
             if(PVHelpers.passiveViewisFull(passiveView)) {
-                passiveView.remove(AkkaUtils.chooseRandom(passiveView))
+                val actor = AkkaUtils.chooseRandom(passiveView)
+                passiveView.remove(actor)
+                removeFromWatchSet(actor)
             }
+            addToWatchSet(node)
             passiveView.add(node)
         }
     }
-
 
     fun passiveToActive(node: ActorRef) {
         passiveView.remove(node)
@@ -37,17 +41,37 @@ class ViewsOperations(private var activeView: MutableSet<ActorRef>,
     }
 
     fun activeToPassive(node: ActorRef) {
-        removeFromActive(node)
+        activeView.remove(node)
         addNodePassiveView(node)
     }
 
-    fun removeFromActive(node: ActorRef) {
+    fun nodeFailedSoRemoveFromActive(node: ActorRef) {
         activeView.remove(node)
-        context.unwatch(node)
+        removeFromWatchSet(node)
     }
+
+    fun nodeFailedSoRemoveFromPassive(node: ActorRef) {
+        passiveView.remove(node)
+        removeFromWatchSet(node)
+    }
+
     private fun dropRandomElementFromActiveView() {
         val node = AkkaUtils.chooseRandom(activeView)
         node.tell(DisconnectMessage(), self)
         activeToPassive(node)
+    }
+
+    private fun addToWatchSet(node: ActorRef) {
+        if(!watchSet.contains(node)) {
+            watchSet.add(node)
+            context.watch(node)
+        }
+    }
+
+    private fun removeFromWatchSet(node: ActorRef) {
+        if(watchSet.contains(node)) {
+            watchSet.remove(node)
+            context.unwatch(node)
+        }
     }
 }
