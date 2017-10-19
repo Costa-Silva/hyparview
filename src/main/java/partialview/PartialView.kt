@@ -1,14 +1,12 @@
 package partialview
 import akka.actor.ActorContext
 import akka.actor.ActorRef
-import akkanetwork.AkkaUtils
 import partialview.PVHelpers.Companion.TTSHUFFLE_MS
-import partialview.messages.BroadcastMessage
-import partialview.messages.DiscoverContactRefMessage
-import partialview.messages.ForwardJoinMessage
 import partialview.protocols.crashrecovery.CrashRecovery
 import partialview.protocols.crashrecovery.HelpResult
 import partialview.protocols.crashrecovery.Priority
+import partialview.protocols.membership.Membership
+import partialview.protocols.membership.messages.BroadcastMessage
 import partialview.protocols.suffle.Shuffle
 import java.util.*
 
@@ -17,9 +15,10 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
                        private var context: ActorContext,
                        private var self: ActorRef) {
 
-    private var membershipOperations = MembershipOperations(activeView, passiveView, self, context)
-    private var crashRecovery = CrashRecovery(activeView, passiveView, self, membershipOperations)
+    private var viewOperations = ViewOperations(activeView, passiveView, self, context)
+    private var crashRecovery = CrashRecovery(activeView, passiveView, self, viewOperations)
     private var shuffle = Shuffle(activeView, passiveView, self)
+    private var membership = Membership(activeView, passiveView, viewOperations, self)
 
     init {
         val task = object : TimerTask() {
@@ -30,47 +29,20 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
         Timer().schedule(task ,0, TTSHUFFLE_MS)
     }
     
-    fun JoinReceived(sender: ActorRef) {
-        sender.tell(DiscoverContactRefMessage(), self)
-        membershipOperations.addNodeActiveView(sender)
-        // TODO: Global new node
-        activeView.forEach {
-            if (it != sender) {
-                it.tell(ForwardJoinMessage(sender, PVHelpers.ARWL), self)
-            }
-        }
+    fun joinReceived(sender: ActorRef) {
+        membership.joinReceived(sender)
     }
 
-    fun DiscoverContactRefMessageReceived(sender: ActorRef) {
-        membershipOperations.addNodeActiveView(sender)
+    fun discoverContactRefMessageReceived(sender: ActorRef) {
+        membership.discoverContactRefMessageReceived(sender)
     }
 
     fun forwardJoinReceived(timeToLive: Int, newNode: ActorRef, sender: ActorRef) {
-        if (timeToLive == 0 || activeView.size == 1) {
-            membershipOperations.addNodeActiveView(newNode)
-        } else {
-            if(timeToLive == PVHelpers.PRWL) {
-                membershipOperations.addNodePassiveView(newNode)
-            }
-            val randomNeighbor = AkkaUtils.chooseRandomWithout(sender, activeView)
-            randomNeighbor?.tell(ForwardJoinMessage(newNode, timeToLive - 1), self)
-        }
+        membership.forwardJoinReceived(timeToLive, newNode, sender)
     }
 
     fun disconnectReceived(sender: ActorRef) {
-        if (activeView.contains(sender)){
-            membershipOperations.activeToPassive(sender)
-        }
-    }
-
-    fun broadcast(message: BroadcastMessage) {
-        activeView.forEach {
-            it.tell(message, self)
-        }
-    }
-
-    fun broadcastReceived(message: BroadcastMessage, sender: ActorRef) {
-        // TODO: partialDeliver (communication)
+        membership.disconnectReceived(sender)
     }
 
     fun crashed(node: ActorRef) {
@@ -91,5 +63,15 @@ data class PartialView(private var activeView: MutableSet<ActorRef> = mutableSet
 
     fun shuffleReplyReceived(sample: MutableSet<ActorRef>, uuid: UUID) {
         shuffle.shuffleReplyReceived(sample, uuid)
+    }
+
+    fun broadcast(message: BroadcastMessage) {
+        activeView.forEach {
+            it.tell(message, self)
+        }
+    }
+
+    fun broadcastReceived(message: BroadcastMessage, sender: ActorRef) {
+        // TODO: partialDeliver (communication)
     }
 }

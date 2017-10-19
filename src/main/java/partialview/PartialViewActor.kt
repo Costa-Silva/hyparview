@@ -6,9 +6,9 @@ import akka.actor.Terminated
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
-import partialview.messages.*
 import partialview.protocols.crashrecovery.messages.HelpMeMessage
 import partialview.protocols.crashrecovery.messages.HelpMeReplyMessage
+import partialview.protocols.membership.messages.*
 import partialview.protocols.suffle.messages.ShuffleMessage
 import partialview.protocols.suffle.messages.ShuffleReplyMessage
 
@@ -33,8 +33,8 @@ class PartialViewActor(contactNode: NodeID?, val fanout: Int) : AbstractActor() 
     override fun createReceive(): Receive {
         return receiveBuilder()
                 .match(Terminated::class.java) { partialView.crashed(it.actor) }
-                .match(JoinMessage::class.java) { partialView.JoinReceived(sender) }
-                .match(DiscoverContactRefMessage::class.java) { partialView.DiscoverContactRefMessageReceived(sender) }
+                .match(JoinMessage::class.java) { partialView.joinReceived(sender) }
+                .match(DiscoverContactRefMessage::class.java) { partialView.discoverContactRefMessageReceived(sender) }
                 .match(ForwardJoinMessage::class.java) { partialView.forwardJoinReceived(it.timeToLive, it.newNode, sender) }
                 .match(DisconnectMessage::class.java) { partialView.disconnectReceived(sender)}
                 .match(BroadcastMessage::class.java) { partialView.broadcastReceived(it, sender) }

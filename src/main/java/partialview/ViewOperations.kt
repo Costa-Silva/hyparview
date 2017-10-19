@@ -3,12 +3,12 @@ package partialview
 import akka.actor.ActorContext
 import akka.actor.ActorRef
 import akkanetwork.AkkaUtils
-import partialview.messages.DisconnectMessage
+import partialview.protocols.membership.messages.DisconnectMessage
 
-class MembershipOperations(private var activeView: MutableSet<ActorRef>,
-                      private var passiveView: MutableSet<ActorRef>,
-                      private var self: ActorRef,
-                      private var context: ActorContext) {
+class ViewOperations(private var activeView: MutableSet<ActorRef>,
+                     private var passiveView: MutableSet<ActorRef>,
+                     private var self: ActorRef,
+                     private var context: ActorContext) {
 
     var watchSet = mutableSetOf<ActorRef>()
 
@@ -20,6 +20,7 @@ class MembershipOperations(private var activeView: MutableSet<ActorRef>,
             addToWatchSet(node)
             activeView.add(node)
         }
+        System.err.println("ActiveView: $activeView")
     }
 
     fun addNodePassiveView(node: ActorRef) {
@@ -35,6 +36,7 @@ class MembershipOperations(private var activeView: MutableSet<ActorRef>,
             addToWatchSet(node)
             passiveView.add(node)
         }
+        System.err.println("PassiveView: $passiveView")
     }
 
     fun passiveToActive(node: ActorRef) {

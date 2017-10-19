@@ -1,4 +1,4 @@
-package partialview.messages
+package partialview.protocols.membership.messages
 
 import akka.actor.ActorRef
 import java.io.Serializable

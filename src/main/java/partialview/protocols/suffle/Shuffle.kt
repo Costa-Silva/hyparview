@@ -4,7 +4,6 @@ import akka.actor.ActorRef
 import akkanetwork.AkkaUtils
 import partialview.PVHelpers
 import partialview.PVHelpers.Companion.PASSIVE_VIEW_MAX_SIZE
-import partialview.PVHelpers.Companion.SHUFFLE_TTL
 import partialview.protocols.suffle.messages.ShuffleMessage
 import partialview.protocols.suffle.messages.ShuffleReplyMessage
 import java.util.*
@@ -27,9 +26,11 @@ class Shuffle(private var activeView: MutableSet<ActorRef>,
         sample.addAll(passiveNodes)
         sample.add(self)
 
-        samplesSent.put(uuid, sample)
         val actor = AkkaUtils.chooseRandom(activeView)
-        actor?.tell(ShuffleMessage(sample,SHUFFLE_TTL, uuid, self), self)
+        actor?.let {
+            samplesSent.put(uuid, sample)
+            it.tell(ShuffleMessage(sample, PVHelpers.SHUFFLE_TTL, uuid, self), self)
+        }
     }
 
     fun shuffleReceived(sample: MutableSet<ActorRef>, timeToLive: Int, uuid: UUID, origin: ActorRef, sender: ActorRef) {
