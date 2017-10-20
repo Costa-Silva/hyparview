@@ -37,7 +37,7 @@ class PartialViewActor(pvWrapper: PVDependenciesWrapper): AbstractActor() {
                 .match(JoinMessage::class.java) { partialView.joinReceived(sender) }
                 .match(DiscoverContactRefMessage::class.java) { partialView.discoverContactRefMessageReceived(sender) }
                 .match(ForwardJoinMessage::class.java) { partialView.forwardJoinReceived(it.timeToLive, it.newNode, sender) }
-                .match(DisconnectMessage::class.java) { partialView.disconnectReceived(sender)}
+                .match(DisconnectMessage::class.java) { partialView.disconnectReceived(sender) }
                 .match(BroadcastMessage::class.java) { partialView.broadcastReceived(it, sender) }
                 .match(HelpMeMessage::class.java) { partialView.helpMeReceived(it.priority, sender) }
                 .match(HelpMeReplyMessage::class.java) { partialView.helpMeResponseReceived(it.result, sender) }

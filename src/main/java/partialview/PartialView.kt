@@ -16,7 +16,7 @@ class PartialView(private val pvWrapper: PVDependenciesWrapper, context: ActorCo
     private var viewOperations = ViewOperations(pvWrapper.activeView, pvWrapper.passiveView, self, context)
     private var crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, self, viewOperations)
     private var shuffle = Shuffle(pvWrapper.activeView, pvWrapper.passiveView, self)
-    private var membership = Membership(pvWrapper.activeView, viewOperations, self)
+    private var membership = Membership(pvWrapper.activeView, viewOperations, self, crashRecovery)
     private var entropy = Entropy(pvWrapper.activeView, crashRecovery)
 
     init {

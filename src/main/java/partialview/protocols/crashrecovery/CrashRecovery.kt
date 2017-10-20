@@ -18,18 +18,22 @@ class CrashRecovery(private var activeView: MutableSet<ActorRef>,
         if(activeView.contains(node)) {
             viewOperations.nodeFailedSoRemoveFromActive(node)
             val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
-            var actor = AkkaUtils.chooseRandom(passiveView)
-
-                while(deadNodesFromPassive.contains(actor)) {
-                    deadNodesFromPassive.remove(actor)
-                    viewOperations.nodeFailedSoRemoveFromPassive(actor)
-                    actor = AkkaUtils.chooseRandom(passiveView)
-                }
-
-                actor?.tell(HelpMeMessage(priority), self)
+            sendHelpMe(priority)
         } else {
             deadNodesFromPassive.add(node)
         }
+    }
+
+
+    fun sendHelpMe(priority: Priority) {
+        var actor = AkkaUtils.chooseRandom(passiveView)
+
+        while(deadNodesFromPassive.contains(actor)) {
+            deadNodesFromPassive.remove(actor)
+            viewOperations.nodeFailedSoRemoveFromPassive(actor)
+            actor = AkkaUtils.chooseRandom(passiveView)
+        }
+        actor?.tell(HelpMeMessage(priority), self)
     }
 
     // TODO: NeighborRequest

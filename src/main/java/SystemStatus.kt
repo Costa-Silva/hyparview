@@ -26,8 +26,16 @@ class SystemStatus(pvWrapper: PVDependenciesWrapper, val system: ActorSystem) {
                 "0.1" -> printlnErr(PVHelpers.ACTIVE_VIEW_MAX_SIZE)
                 "0.2" -> printlnErr(PVHelpers.PASSIVE_VIEW_MAX_SIZE)
                 "1.1" -> printlnErr(pvWrapper.contactNode)
-                "1.2" -> printlnErr(pvWrapper.activeView)
-                "1.3" -> printlnErr(pvWrapper.passiveView)
+                "1.2" -> {
+                    pvWrapper.activeView.forEach {
+                        print("${it.path().name()}  ")
+                    }
+                }
+                "1.3" -> {
+                    pvWrapper.passiveView.forEach {
+                        print("${it.path().name()}  ")
+                    }
+                }
                 "4.1" -> cutTheWireOption()
                 "4.2" -> killOption()
                 else -> {println("Unknown command. Usage: 1.1")}

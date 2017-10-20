@@ -4,12 +4,15 @@ import akka.actor.ActorRef
 import akkanetwork.AkkaUtils
 import partialview.PVHelpers
 import partialview.ViewOperations
+import partialview.protocols.crashrecovery.CrashRecovery
+import partialview.protocols.crashrecovery.Priority
 import partialview.protocols.membership.messages.DiscoverContactRefMessage
 import partialview.protocols.membership.messages.ForwardJoinMessage
 
-class Membership(private var activeView: MutableSet<ActorRef> = mutableSetOf(),
-                 private var viewOperations: ViewOperations,
-                 private var self: ActorRef) {
+class Membership(private val activeView: MutableSet<ActorRef> = mutableSetOf(),
+                 private val viewOperations: ViewOperations,
+                 private val self: ActorRef,
+                 private val crashRecovery: CrashRecovery) {
 
     fun join(sender: ActorRef) {
         sender.tell(DiscoverContactRefMessage(), self)
@@ -29,6 +32,7 @@ class Membership(private var activeView: MutableSet<ActorRef> = mutableSetOf(),
     fun forwardJoin(timeToLive: Int, newNode: ActorRef, sender: ActorRef) {
         if (timeToLive == 0 || activeView.size == 1) {
             viewOperations.addNodeActiveView(newNode)
+            newNode.tell(DiscoverContactRefMessage(), self)
         } else {
             if(timeToLive == PVHelpers.PRWL) {
                 viewOperations.addNodePassiveView(newNode)
@@ -41,6 +45,7 @@ class Membership(private var activeView: MutableSet<ActorRef> = mutableSetOf(),
     fun disconnect(sender: ActorRef) {
         if (activeView.contains(sender)){
             viewOperations.activeToPassive(sender)
+            if(activeView.size == 0) { crashRecovery.sendHelpMe(Priority.HIGH) }
         }
     }
 }
