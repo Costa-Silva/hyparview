@@ -3,12 +3,23 @@ package akkanetwork
 import akka.actor.ActorContext
 import akka.actor.ActorRef
 import akka.actor.ActorSelection
+import com.typesafe.config.ConfigFactory
 import java.util.*
 
 class AkkaUtils {
     companion object {
-        fun lookUpRemote(context: ActorContext, systemName: String, ip: NodeID, NodeName: String): ActorSelection {
-            return context.actorSelection("akka.tcp://$systemName@$ip/user/$NodeName")
+        fun lookUpRemote(context: ActorContext, systemName: String, ip: NodeID): ActorSelection {
+            return context.actorSelection("akka.tcp://$systemName@$ip/user/${ip.identifier}")
+        }
+
+        fun createNodeID(nodeID: String): NodeID {
+            val config = ConfigFactory.load()
+
+            // TODO: TRY CATCH!!!
+
+            val ip = config.getString("nodes.ip.$nodeID")
+            val port = config.getString("nodes.port.$nodeID")
+            return NodeID(ip, port, nodeID)
         }
 
         fun chooseRandomWithout(values: Set<ActorRef>, set: Set<ActorRef>): ActorRef? {

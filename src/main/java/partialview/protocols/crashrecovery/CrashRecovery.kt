@@ -32,7 +32,7 @@ class CrashRecovery(private var activeView: MutableSet<ActorRef>,
         }
     }
 
-    fun helpMeReceived(priority: Priority, sender: ActorRef) {
+    fun helpMe(priority: Priority, sender: ActorRef) {
         var result = HelpResult.DECLINED
 
         // when 2 or more nodes fail and this node receives all those requests without notifying on time that node
@@ -48,7 +48,7 @@ class CrashRecovery(private var activeView: MutableSet<ActorRef>,
         }
     }
 
-    fun helpMeResponseReceived(result: HelpResult, sender: ActorRef) {
+    fun helpMeResponse(result: HelpResult, sender: ActorRef) {
         if (result == HelpResult.ACCEPTED) {
             viewOperations.passiveToActive(sender)
         } else {

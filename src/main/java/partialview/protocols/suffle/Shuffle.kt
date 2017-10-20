@@ -33,7 +33,7 @@ class Shuffle(private var activeView: MutableSet<ActorRef>,
         }
     }
 
-    fun shuffleReceived(sample: MutableSet<ActorRef>, timeToLive: Int, uuid: UUID, origin: ActorRef, sender: ActorRef) {
+    fun shuffle(sample: MutableSet<ActorRef>, timeToLive: Int, uuid: UUID, origin: ActorRef, sender: ActorRef) {
         val newTLL = timeToLive - 1
         if (newTLL > 0 && activeView.size > 1) {
             val actor = AkkaUtils.chooseRandomWithout(mutableSetOf(origin, sender), activeView)
@@ -68,7 +68,7 @@ class Shuffle(private var activeView: MutableSet<ActorRef>,
         passiveView.addAll(sample)
     }
 
-    fun shuffleReplyReceived(sample: MutableSet<ActorRef>, uuid: UUID) {
+    fun shuffleReply(sample: MutableSet<ActorRef>, uuid: UUID) {
         samplesSent.remove(uuid)?.let { setSent ->
             removeAlreadyKnownNodes(sample)
             replaceNodesInPassiveView(sample, setSent)

@@ -11,7 +11,7 @@ class Membership(private var activeView: MutableSet<ActorRef> = mutableSetOf(),
                  private var viewOperations: ViewOperations,
                  private var self: ActorRef) {
 
-    fun joinReceived(sender: ActorRef) {
+    fun join(sender: ActorRef) {
         sender.tell(DiscoverContactRefMessage(), self)
         viewOperations.addNodeActiveView(sender)
         // TODO: Global new node
@@ -22,11 +22,11 @@ class Membership(private var activeView: MutableSet<ActorRef> = mutableSetOf(),
         }
     }
 
-    fun discoverContactRefMessageReceived(sender: ActorRef) {
+    fun discoverContactRefMessage(sender: ActorRef) {
         viewOperations.addNodeActiveView(sender)
     }
 
-    fun forwardJoinReceived(timeToLive: Int, newNode: ActorRef, sender: ActorRef) {
+    fun forwardJoin(timeToLive: Int, newNode: ActorRef, sender: ActorRef) {
         if (timeToLive == 0 || activeView.size == 1) {
             viewOperations.addNodeActiveView(newNode)
         } else {
@@ -38,7 +38,7 @@ class Membership(private var activeView: MutableSet<ActorRef> = mutableSetOf(),
         }
     }
 
-    fun disconnectReceived(sender: ActorRef) {
+    fun disconnect(sender: ActorRef) {
         if (activeView.contains(sender)){
             viewOperations.activeToPassive(sender)
         }

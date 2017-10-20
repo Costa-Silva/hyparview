@@ -29,5 +29,5 @@ fun main(args: Array<String>) {
 
     val pvWrapper = PVDependenciesWrapper(contactNode, FANOUT)
     val nodeRef = system.actorOf(PartialViewActor.props(pvWrapper), myIdentifier)
-    SystemStatus(pvWrapper)
+    SystemStatus(pvWrapper, system)
 }

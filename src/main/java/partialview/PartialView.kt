@@ -5,6 +5,7 @@ import partialview.PVHelpers.Companion.TTSHUFFLE_MS
 import partialview.protocols.crashrecovery.CrashRecovery
 import partialview.protocols.crashrecovery.HelpResult
 import partialview.protocols.crashrecovery.Priority
+import partialview.protocols.entropy.Entropy
 import partialview.protocols.membership.Membership
 import partialview.protocols.membership.messages.BroadcastMessage
 import partialview.protocols.suffle.Shuffle
@@ -16,6 +17,7 @@ class PartialView(private val pvWrapper: PVDependenciesWrapper, context: ActorCo
     private var crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, self, viewOperations)
     private var shuffle = Shuffle(pvWrapper.activeView, pvWrapper.passiveView, self)
     private var membership = Membership(pvWrapper.activeView, viewOperations, self)
+    private var entropy = Entropy(pvWrapper.activeView, crashRecovery)
 
     init {
         val task = object : TimerTask() {
@@ -27,19 +29,19 @@ class PartialView(private val pvWrapper: PVDependenciesWrapper, context: ActorCo
     }
 
     fun joinReceived(sender: ActorRef) {
-        membership.joinReceived(sender)
+        membership.join(sender)
     }
 
     fun discoverContactRefMessageReceived(sender: ActorRef) {
-        membership.discoverContactRefMessageReceived(sender)
+        membership.discoverContactRefMessage(sender)
     }
 
     fun forwardJoinReceived(timeToLive: Int, newNode: ActorRef, sender: ActorRef) {
-        membership.forwardJoinReceived(timeToLive, newNode, sender)
+        membership.forwardJoin(timeToLive, newNode, sender)
     }
 
     fun disconnectReceived(sender: ActorRef) {
-        membership.disconnectReceived(sender)
+        membership.disconnect(sender)
     }
 
     fun crashed(node: ActorRef) {
@@ -47,19 +49,27 @@ class PartialView(private val pvWrapper: PVDependenciesWrapper, context: ActorCo
     }
 
     fun helpMeReceived(priority: Priority, sender: ActorRef) {
-        crashRecovery.helpMeReceived(priority, sender)
+        crashRecovery.helpMe(priority, sender)
     }
 
     fun helpMeResponseReceived(result: HelpResult, sender: ActorRef) {
-        crashRecovery.helpMeResponseReceived(result, sender)
+        crashRecovery.helpMeResponse(result, sender)
     }
 
     fun shuffleReceived(sample: MutableSet<ActorRef>, timeToLive: Int, uuid: UUID, origin: ActorRef, sender: ActorRef) {
-        shuffle.shuffleReceived(sample, timeToLive, uuid, origin, sender)
+        shuffle.shuffle(sample, timeToLive, uuid, origin, sender)
     }
 
     fun shuffleReplyReceived(sample: MutableSet<ActorRef>, uuid: UUID) {
-        shuffle.shuffleReplyReceived(sample, uuid)
+        shuffle.shuffleReply(sample, uuid)
+    }
+
+    fun cutTheWireReceived(disconnectNodeID: String) {
+        entropy.cutTheWire(disconnectNodeID)
+    }
+
+    fun killReceived() {
+        entropy.kill()
     }
 
     fun broadcast(message: BroadcastMessage) {
