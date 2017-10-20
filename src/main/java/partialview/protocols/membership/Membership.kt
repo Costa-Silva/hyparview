@@ -45,7 +45,7 @@ class Membership(private val activeView: MutableSet<ActorRef> = mutableSetOf(),
     fun disconnect(sender: ActorRef) {
         if (activeView.contains(sender)){
             viewOperations.activeToPassive(sender)
-            if(activeView.size == 0) { crashRecovery.sendHelpMe(Priority.HIGH) }
+            if(activeView.size == 0) { crashRecovery.sendNeighborRequest(Priority.HIGH) }
         }
     }
 }

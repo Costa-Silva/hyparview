@@ -3,7 +3,7 @@ import akka.actor.ActorContext
 import akka.actor.ActorRef
 import partialview.PVHelpers.Companion.TTSHUFFLE_MS
 import partialview.protocols.crashrecovery.CrashRecovery
-import partialview.protocols.crashrecovery.HelpResult
+import partialview.protocols.crashrecovery.NeighborRequestResult
 import partialview.protocols.crashrecovery.Priority
 import partialview.protocols.entropy.Entropy
 import partialview.protocols.membership.Membership
@@ -49,11 +49,11 @@ class PartialView(private val pvWrapper: PVDependenciesWrapper, context: ActorCo
     }
 
     fun helpMeReceived(priority: Priority, sender: ActorRef) {
-        crashRecovery.helpMe(priority, sender)
+        crashRecovery.neighborRequest(priority, sender)
     }
 
-    fun helpMeResponseReceived(result: HelpResult, sender: ActorRef) {
-        crashRecovery.helpMeResponse(result, sender)
+    fun helpMeResponseReceived(result: NeighborRequestResult, sender: ActorRef) {
+        crashRecovery.neighborRequestReply(result, sender)
     }
 
     fun shuffleReceived(sample: MutableSet<ActorRef>, timeToLive: Int, uuid: UUID, origin: ActorRef, sender: ActorRef) {

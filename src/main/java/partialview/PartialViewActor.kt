@@ -5,8 +5,8 @@ import akka.actor.Props
 import akka.actor.Terminated
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
-import partialview.protocols.crashrecovery.messages.HelpMeMessage
-import partialview.protocols.crashrecovery.messages.HelpMeReplyMessage
+import partialview.protocols.crashrecovery.messages.NeighborRequestMessage
+import partialview.protocols.crashrecovery.messages.NeighborRequestReplyMessage
 import partialview.protocols.entropy.messages.CutTheWireMessage
 import partialview.protocols.entropy.messages.KillMessage
 import partialview.protocols.membership.messages.*
@@ -39,8 +39,8 @@ class PartialViewActor(pvWrapper: PVDependenciesWrapper): AbstractActor() {
                 .match(ForwardJoinMessage::class.java) { partialView.forwardJoinReceived(it.timeToLive, it.newNode, sender) }
                 .match(DisconnectMessage::class.java) { partialView.disconnectReceived(sender) }
                 .match(BroadcastMessage::class.java) { partialView.broadcastReceived(it, sender) }
-                .match(HelpMeMessage::class.java) { partialView.helpMeReceived(it.priority, sender) }
-                .match(HelpMeReplyMessage::class.java) { partialView.helpMeResponseReceived(it.result, sender) }
+                .match(NeighborRequestMessage::class.java) { partialView.helpMeReceived(it.priority, sender) }
+                .match(NeighborRequestReplyMessage::class.java) { partialView.helpMeResponseReceived(it.result, sender) }
                 .match(ShuffleMessage::class.java) { partialView.shuffleReceived(it.sample, it.timeToLive, it.uuid, it.origin, sender) }
                 .match(ShuffleReplyMessage::class.java) { partialView.shuffleReplyReceived(it.sample, it.uuid) }
 

@@ -2,6 +2,6 @@ package partialview.protocols.crashrecovery
 
 import java.io.Serializable
 
-enum class HelpResult: Serializable {
+enum class NeighborRequestResult : Serializable {
     ACCEPTED, DECLINED
 }
