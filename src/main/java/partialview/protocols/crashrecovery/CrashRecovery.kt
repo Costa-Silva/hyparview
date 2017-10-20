@@ -13,6 +13,7 @@ class CrashRecovery(private var activeView: MutableSet<ActorRef>,
                     private var viewOperations: ViewOperations) {
 
     var deadNodesFromPassive = mutableSetOf<ActorRef>()
+    var ongoingNeighborRequests = mutableSetOf<ActorRef>()
 
     fun crashed(node: ActorRef) {
         if(activeView.contains(node)) {
@@ -25,40 +26,39 @@ class CrashRecovery(private var activeView: MutableSet<ActorRef>,
     }
 
     fun sendNeighborRequest(priority: Priority) {
-        var actor = AkkaUtils.chooseRandom(passiveView)
+        var actor = AkkaUtils.chooseRandomWithout(ongoingNeighborRequests, passiveView)
 
         while(deadNodesFromPassive.contains(actor)) {
             deadNodesFromPassive.remove(actor)
             viewOperations.nodeFailedSoRemoveFromPassive(actor)
-            actor = AkkaUtils.chooseRandom(passiveView)
+            actor = AkkaUtils.chooseRandomWithout(ongoingNeighborRequests, passiveView)
         }
-        actor?.tell(NeighborRequestMessage(priority), self)
+        if (actor != null) {
+            ongoingNeighborRequests.add(actor)
+            actor.tell(NeighborRequestMessage(priority), self)
+        }
     }
 
     fun neighborRequest(priority: Priority, sender: ActorRef) {
         var result = NeighborRequestResult.DECLINED
-
-        // TODO:
-        // when 2 or more nodes fail and this node receives all those requests without notifying on time that node
-        // (we can only accept 1 to join our active view)
-        if(activeView.contains(sender)) {
-            sender.tell(NeighborRequestReplyMessage(result), self)
-        } else {
             if(priority == Priority.HIGH || !PVHelpers.activeViewisFull(activeView)) {
                 viewOperations.passiveToActive(sender)
                 result = NeighborRequestResult.ACCEPTED
             }
             sender.tell(NeighborRequestReplyMessage(result), self)
-        }
     }
 
     fun neighborRequestReply(result: NeighborRequestResult, sender: ActorRef) {
         if (result == NeighborRequestResult.ACCEPTED) {
             viewOperations.passiveToActive(sender)
         } else {
-            val actor = AkkaUtils.chooseRandomWithout(sender, passiveView)
-            val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
-            actor?.tell(NeighborRequestMessage(priority), self)
+            val actor = AkkaUtils.chooseRandomWithout(ongoingNeighborRequests, passiveView)
+            actor?.let {
+                val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
+                ongoingNeighborRequests.add(it)
+                it.tell(NeighborRequestMessage(priority), self)
+            }
         }
+        ongoingNeighborRequests.remove(sender)
     }
 }
