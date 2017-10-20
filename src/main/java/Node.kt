@@ -2,6 +2,7 @@
 import akka.actor.ActorSystem
 import akkanetwork.AkkaConstants.Companion.FANOUT
 import akkanetwork.AkkaConstants.Companion.SYSTEM_NAME
+import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
 import com.typesafe.config.ConfigFactory
 import partialview.PVDependenciesWrapper
@@ -24,7 +25,7 @@ fun main(args: Array<String>) {
     // Discover contact info logic
     if(myIdentifier != "node0") {
         val contactID = "node${Random().nextInt(Integer.parseInt(myIdentifier.split("node")[1]))}"
-        contactNode = NodeID(config.getString("nodes.ip.$contactID"), config.getString("nodes.port.$contactID"), contactID)
+        contactNode = AkkaUtils.createNodeID(contactID)
     }
 
     val pvWrapper = PVDependenciesWrapper(contactNode, FANOUT)
