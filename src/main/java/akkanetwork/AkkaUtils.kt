@@ -12,14 +12,16 @@ class AkkaUtils {
             return context.actorSelection("akka.tcp://$systemName@$ip/user/${ip.identifier}")
         }
 
-        fun createNodeID(nodeID: String): NodeID {
+        fun createNodeID(nodeID: String): NodeID? {
             val config = ConfigFactory.load()
-
-            // TODO: TRY CATCH!!!
-
-            val ip = config.getString("nodes.ip.$nodeID")
-            val port = config.getString("nodes.port.$nodeID")
-            return NodeID(ip, port, nodeID)
+            return try {
+                val ip = config.getString("nodes.ip.$nodeID")
+                val port = config.getString("nodes.port.$nodeID")
+                NodeID(ip, port, nodeID)
+            } catch (e: Exception) {
+                System.err.println("BAD NODEID")
+                null
+            }
         }
 
         fun chooseRandomWithout(values: Set<ActorRef>, set: Set<ActorRef>): ActorRef? {

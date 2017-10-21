@@ -6,6 +6,7 @@ import akkanetwork.NodeID
 import com.typesafe.config.ConfigFactory
 import partialview.PVDependenciesWrapper
 import partialview.PartialViewActor
+import systemsupervisor.SystemStatus
 import java.util.*
 
 fun main(args: Array<String>) {
