@@ -3,6 +3,9 @@
     <output-path>$USER_HOME$/Desktop/ASDJAR</output-path>
     <root id="root">
       <element id="archive" name="Projeto_ASD1.jar">
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/src/main/resources/META-INF/MANIFEST.MF" />
+        </element>
         <element id="module-output" name="Projeto_ASD1" />
       </element>
       <element id="library" level="project" name="Maven: com.typesafe.akka:akka-protobuf_2.11:2.5.6" />
