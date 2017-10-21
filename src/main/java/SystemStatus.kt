@@ -73,10 +73,7 @@ class SystemStatus(private val pvWrapper: PVDependenciesWrapper, private val sys
                 nodeInfo.addProperty("Sent",6)
                 nodesInfoArray.add(nodeInfo)
                 root.add("data", nodesInfoArray)
-
-                val got = root.toString()
-                println("ss: $got")
-                val jsonParser = JsonParser().parse(got)
+                val jsonParser = JsonParser().parse(root.toString())
                 val prettyJsonString = GsonBuilder().setPrettyPrinting().create().toJson(jsonParser)
 
                 try {
