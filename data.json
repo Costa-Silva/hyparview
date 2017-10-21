@@ -1,0 +1,12 @@
+{
+  "system": "NoFails",
+  "data": [
+    {
+      "id": "node0",
+      "av": [],
+      "pv": [],
+      "Received": 5,
+      "Sent": 6
+    }
+  ]
+}

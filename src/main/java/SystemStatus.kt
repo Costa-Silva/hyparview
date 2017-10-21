@@ -1,12 +1,21 @@
 
 import akka.actor.ActorSystem
+import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
+import com.google.gson.*
 import partialview.PVDependenciesWrapper
 import partialview.PVHelpers
 import partialview.protocols.entropy.EntropyActor
 import partialview.protocols.entropy.EntropyOptions
+import scala.util.parsing.json.JSONObject
+import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
+import java.io.IOException
+import java.nio.file.Paths
 
-class SystemStatus(pvWrapper: PVDependenciesWrapper, val system: ActorSystem) {
+
+class SystemStatus(private val pvWrapper: PVDependenciesWrapper, private val system: ActorSystem) {
 
     companion object {
         fun printlnErr(any: Any?) {
@@ -28,9 +37,57 @@ class SystemStatus(pvWrapper: PVDependenciesWrapper, val system: ActorSystem) {
                 "1.4" -> printlnErr("Passive Active view: ${pvWrapper.passiveActiveView.map { it.path().name() }}")
                 "4.1" -> cutTheWireOption()
                 "4.2" -> killOption()
+                "5.1" -> writeToFile()
                 else -> {println("Unknown command. Usage: 1.1")}
             }
         }
+    }
+
+    private fun writeToFile() {
+        val parser = JsonParser()
+            val filepath = Paths.get(System.getProperty("user.dir"), "data.json").toString()
+
+            if (File(filepath).exists()) {
+                val obj = parser.parse(FileReader(filepath))
+                val jsonObject = obj as JSONObject
+
+            } else {
+                val root = JsonObject()
+                root.addProperty("system", AkkaConstants.SYSTEM_NAME)
+                val nodesInfoArray = JsonArray()
+                val nodeInfo = JsonObject()
+                nodeInfo.addProperty("id", pvWrapper.myID)
+
+                val av = JsonArray()
+                pvWrapper.activeView.map { it.path().name()}.forEach {
+                    av.add(JsonPrimitive(it))
+                }
+
+                val pv = JsonArray()
+                pvWrapper.passiveView.map { it.path().name()}.forEach {
+                    pv.add(JsonPrimitive(it))
+                }
+                nodeInfo.add("av", av)
+                nodeInfo.add("pv", pv)
+                nodeInfo.addProperty("Received",5)
+                nodeInfo.addProperty("Sent",6)
+                nodesInfoArray.add(nodeInfo)
+                root.add("data", nodesInfoArray)
+
+                val got = root.toString()
+                println("ss: $got")
+                val jsonParser = JsonParser().parse(got)
+                val prettyJsonString = GsonBuilder().setPrettyPrinting().create().toJson(jsonParser)
+
+                try {
+                    FileWriter(filepath).use({ file ->
+                        file.write(prettyJsonString)
+                        println("Saved state!")
+                    })
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
     }
 
     private fun printOptions(){
@@ -48,6 +105,9 @@ class SystemStatus(pvWrapper: PVDependenciesWrapper, val system: ActorSystem) {
         println("\nEntropy commands.")
         println("1)Cut the wire between 2 nodes: 4.1")
         println("2)Kill a node: 4.2")
+
+        println("\nSystem commands.")
+        println("1)Write status to file: 5.1")
         println("\n\nType here:")
     }
 

@@ -1,6 +1,5 @@
 
 import akka.actor.ActorSystem
-import akkanetwork.AkkaConstants.Companion.FANOUT
 import akkanetwork.AkkaConstants.Companion.SYSTEM_NAME
 import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
@@ -28,7 +27,7 @@ fun main(args: Array<String>) {
         contactNode = AkkaUtils.createNodeID(contactID)
     }
 
-    val pvWrapper = PVDependenciesWrapper(contactNode)
+    val pvWrapper = PVDependenciesWrapper(contactNode = contactNode, myID = myIdentifier)
     val nodeRef = system.actorOf(PartialViewActor.props(pvWrapper), myIdentifier)
     SystemStatus(pvWrapper, system)
 }
