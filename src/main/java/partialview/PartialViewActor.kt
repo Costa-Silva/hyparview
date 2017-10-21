@@ -19,7 +19,7 @@ class PartialViewActor(pvWrapper: PVDependenciesWrapper): AbstractActor() {
 
     companion object {
         fun props(pvWrapper: PVDependenciesWrapper): Props {
-            return Props.create(PartialViewActor::class.java) { PartialViewActor(pvWrapper)}
+            return Props.create(PartialViewActor::class.java) { PartialViewActor(pvWrapper) }
         }
     }
 

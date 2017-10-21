@@ -11,21 +11,21 @@ import partialview.protocols.membership.messages.BroadcastMessage
 import partialview.protocols.suffle.Shuffle
 import java.util.*
 
-class PartialView(private val pvWrapper: PVDependenciesWrapper, context: ActorContext, private var self: ActorRef) {
+class PartialView(private val pvWrapper: PVDependenciesWrapper, context: ActorContext, private val self: ActorRef) {
 
-    private var viewOperations = ViewOperations(pvWrapper.activeView, pvWrapper.passiveView, self, context)
-    private var crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, self, viewOperations)
-    private var shuffle = Shuffle(pvWrapper.activeView, pvWrapper.passiveView, self)
-    private var membership = Membership(pvWrapper.activeView, viewOperations, self, crashRecovery)
-    private var entropy = Entropy(pvWrapper.activeView, crashRecovery)
+    private val viewOperations = ViewOperations(pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView,self, context)
+    private val crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, self, viewOperations)
+    private val shuffle = Shuffle(pvWrapper.activeView, pvWrapper.passiveView, viewOperations, self)
+    private val membership = Membership(pvWrapper.activeView, viewOperations, self, crashRecovery)
+    private val entropy = Entropy(pvWrapper.activeView, crashRecovery)
 
     init {
-        val task = object : TimerTask() {
+        val shuffleTask = object : TimerTask() {
             override fun run() {
                 shuffle.shufflePassiveView()
             }
         }
-        Timer().schedule(task ,0, TTSHUFFLE_MS)
+        Timer().schedule(shuffleTask ,0, TTSHUFFLE_MS)
     }
 
     fun joinReceived(sender: ActorRef) {

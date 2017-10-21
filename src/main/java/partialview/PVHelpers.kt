@@ -18,6 +18,9 @@ class PVHelpers {
         const val SHUFFLE_TTL = 3
         const val TTSHUFFLE_MS: Long = 5000
 
+        // Crash-Recovery protocol
+        val ACTIVE_PASSIVE_VIEW_SIZE = Math.min(4, PASSIVE_VIEW_MAX_SIZE/2)
+
         fun passiveViewisFull(set: Set<ActorRef>): Boolean {
             return set.size >= PASSIVE_VIEW_MAX_SIZE
         }

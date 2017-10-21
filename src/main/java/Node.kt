@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
         contactNode = AkkaUtils.createNodeID(contactID)
     }
 
-    val pvWrapper = PVDependenciesWrapper(contactNode, FANOUT)
+    val pvWrapper = PVDependenciesWrapper(contactNode)
     val nodeRef = system.actorOf(PartialViewActor.props(pvWrapper), myIdentifier)
     SystemStatus(pvWrapper, system)
 }

@@ -4,12 +4,14 @@ import akka.actor.ActorRef
 import akkanetwork.AkkaUtils
 import partialview.PVHelpers
 import partialview.PVHelpers.Companion.PASSIVE_VIEW_MAX_SIZE
+import partialview.ViewOperations
 import partialview.protocols.suffle.messages.ShuffleMessage
 import partialview.protocols.suffle.messages.ShuffleReplyMessage
 import java.util.*
 
-class Shuffle(private var activeView: MutableSet<ActorRef>,
-              private var passiveView: MutableSet<ActorRef>,
+class Shuffle(private val activeView: MutableSet<ActorRef>,
+              private val passiveView: MutableSet<ActorRef>,
+              private val viewOperations: ViewOperations,
               private var self: ActorRef) {
 
     private val samplesSent = mutableMapOf<UUID, MutableSet<ActorRef>>()
@@ -60,12 +62,15 @@ class Shuffle(private var activeView: MutableSet<ActorRef>,
             var actor: ActorRef? = null
             while (actor == null || removedNodes.contains(actor)) {
                 actor = AkkaUtils.chooseRandomWithout(removedNodes, randomPassiveNodes)
-                if(actor == null) {actor = AkkaUtils.chooseRandom(passiveView)} else {randomPassiveNodes.remove(actor)}
+                if(actor == null) {
+                    actor = AkkaUtils.chooseRandomWithout(removedNodes, passiveView)
+                } else {
+                    randomPassiveNodes.remove(actor)
+                }
             }
             removedNodes.add(actor)
-            passiveView.remove(actor)
         }
-        passiveView.addAll(sample)
+        viewOperations.replaceNodesInPassiveViewShuffle(removedNodes, sample)
     }
 
     fun shuffleReply(sample: MutableSet<ActorRef>, uuid: UUID) {
