@@ -28,7 +28,7 @@ class SystemStatus(private val pvWrapper: PVDependenciesWrapper, private val sys
                 "1.4" -> printlnErr("Passive Active view: ${pvWrapper.passiveActiveView.map { it.path().name() }}")
                 "4.1" -> entropyOptions.cutTheWireOption()
                 "4.2" -> entropyOptions.killOption()
-                "5.1" -> WriteStatus().writeToFile(pvWrapper)
+                //"5.1" -> WriteStatus().writeToFile(pvWrapper)
                 else -> {println("Unknown command. Usage: 1.1")}
             }
         }

@@ -6,8 +6,10 @@ import partialview.protocols.crashrecovery.CrashRecovery
 import partialview.protocols.crashrecovery.NeighborRequestResult
 import partialview.protocols.crashrecovery.Priority
 import partialview.protocols.entropy.Entropy
+import partialview.protocols.gossip.Gossip
+import partialview.protocols.gossip.messages.GossipMessage
+import partialview.protocols.gossip.messages.StatusMessageWrapper
 import partialview.protocols.membership.Membership
-import partialview.protocols.membership.messages.BroadcastMessage
 import partialview.protocols.suffle.Shuffle
 import java.util.*
 
@@ -18,7 +20,7 @@ class PartialView(private val pvWrapper: PVDependenciesWrapper, context: ActorCo
     private val shuffle = Shuffle(pvWrapper.activeView, pvWrapper.passiveView, viewOperations, self)
     private val membership = Membership(pvWrapper.activeView, viewOperations, self, crashRecovery)
     private val entropy = Entropy(pvWrapper.activeView, crashRecovery)
-
+    private val gossip = Gossip(pvWrapper.activeView, self, pvWrapper.globalViewActor)
     init {
         val shuffleTask = object : TimerTask() {
             override fun run() {
@@ -64,21 +66,19 @@ class PartialView(private val pvWrapper: PVDependenciesWrapper, context: ActorCo
         shuffle.shuffleReply(sample, uuid)
     }
 
+    fun broadcast(message: StatusMessageWrapper) {
+        gossip.broadcast(message)
+    }
+
+    fun gossipMessageReceived(message: GossipMessage) {
+        gossip.gossipMessage(message)
+    }
+
     fun cutTheWireReceived(disconnectNodeID: String) {
         entropy.cutTheWire(disconnectNodeID)
     }
 
     fun killReceived() {
         entropy.kill()
-    }
-
-    fun broadcast(message: BroadcastMessage) {
-        pvWrapper.activeView.forEach {
-            it.tell(message, self)
-        }
-    }
-
-    fun broadcastReceived(message: BroadcastMessage, sender: ActorRef) {
-        // TODO: partialDeliver (communication)
     }
 }
