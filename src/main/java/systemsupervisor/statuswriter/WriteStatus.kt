@@ -6,9 +6,9 @@ import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
 import com.google.gson.*
+import partialview.wrappers.PartialViewSharedData
 import scala.concurrent.Await
 import scala.concurrent.duration.FiniteDuration
-import partialview.wrappers.PartialViewSharedData
 import systemsupervisor.graph.NodeStateMessage
 import systemsupervisor.statuswriter.messages.RequestFromAppMessage
 import java.io.FileWriter
@@ -20,25 +20,30 @@ class WriteStatus {
 
     companion object {
         fun writeToFile(pvData: PartialViewSharedData, statusActor: ActorRef) {
-
+            val ERRORS_ALLOWED = 5
+            var errorCount = 0
             val root = JsonObject()
             root.addProperty("system", AkkaConstants.SYSTEM_NAME)
             val nodesInfoArray = JsonArray()
 
             for (i in 0..10000) {
-                val nodeID = AkkaUtils.createNodeID("${i}node")
-                if (nodeID != null) {
-                    if(nodeID.identifier != pvData.identifier) {
-                        val newEntry = nodeInfoFor(nodeID, statusActor)
-                        if (newEntry != null) {
-                            nodesInfoArray.add(newEntry)
+                if(ERRORS_ALLOWED>errorCount) {
+                    val nodeID = AkkaUtils.createNodeID("${i}node")
+                    if (nodeID != null) {
+                        if(nodeID.identifier != pvData.identifier) {
+                            val newEntry = nodeInfoFor(nodeID, statusActor)
+                            if (newEntry != null) {
+                                nodesInfoArray.add(newEntry)
+                            } else {
+                                errorCount++
+                            }
                         } else {
-                            break
+                            nodesInfoArray.add(createNodeInfo(pvData))
                         }
                     } else {
-                        nodesInfoArray.add(createNodeInfo(pvData))
+                        break
                     }
-                } else {
+                }else {
                     break
                 }
             }
@@ -58,17 +63,15 @@ class WriteStatus {
         }
 
         private fun nodeInfoFor(nodeID: NodeID, statusActor: ActorRef): JsonObject? {
-
+            val timeoutTime: Long = 500
             try {
-                val future = Patterns.ask(statusActor, RequestFromAppMessage(nodeID.identifier),1000)
-                val result = Await.result(future, FiniteDuration(1000, TimeUnit.MILLISECONDS))
+                val future = Patterns.ask(statusActor, RequestFromAppMessage(nodeID.identifier),timeoutTime)
+                val result = Await.result(future, FiniteDuration(timeoutTime, TimeUnit.MILLISECONDS))
                 if (result != null) {
                     val message = result as NodeStateMessage
                     return createNodeInfo(message.partialViewData)
                 }
-            } catch (e: Exception) {
-                println("deu coco @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-            }
+            } catch (e: Exception) { }
             return null
         }
 

@@ -200,9 +200,11 @@ class GlobalView(private val eventList: LinkedList<UUID>,
         otherGlobalView
                 .filter { !globalView.contains(it) }
                 .forEach { node ->
-                    val future = Patterns.ask(node, PingMessage(), CHECK_IF_ALIVE_TIMEOUT_MS)
-                    val result = Await.result(future, FiniteDuration(CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS))
-                    val isAlive = result != null
+                    var isAlive = false
+                    try {
+                        val future = Patterns.ask(node, PingMessage(), CHECK_IF_ALIVE_TIMEOUT_MS)
+                        isAlive = Await.result(future, FiniteDuration(CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) as Boolean
+                    } catch (e: Exception) { }
                     if(isAlive) {
                         globalNewNode(node, false)
                     } else {
@@ -212,9 +214,11 @@ class GlobalView(private val eventList: LinkedList<UUID>,
         globalView
                 .filter { !otherGlobalView.contains(it) }
                 .forEach { node ->
-                    val future = Patterns.ask(node, PingMessage(), CHECK_IF_ALIVE_TIMEOUT_MS)
-                    val result = Await.result(future, FiniteDuration(CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS))
-                    val isAlive = result != null
+                    var isAlive = false
+                    try {
+                        val future = Patterns.ask(node, PingMessage(), CHECK_IF_ALIVE_TIMEOUT_MS)
+                        isAlive = Await.result(future, FiniteDuration(CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) as Boolean
+                    } catch (e: Exception) { }
                     if(isAlive) {
                         addToEventList(UUID.randomUUID() ,Event(EventEnum.STILL_ALIVE, node))
                     } else {

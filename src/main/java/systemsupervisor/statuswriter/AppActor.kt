@@ -14,11 +14,7 @@ class AppActor(): AbstractActor() {
 
     override fun createReceive(): Receive {
         return receiveBuilder()
-                .match(NodeStateMessage::class.java) { nodeStateReceived(it) }
+                .match(NodeStateMessage::class.java) { }
                 .build()
-    }
-
-    private fun nodeStateReceived(nodeState: NodeStateMessage) {
-        println("passou por aqui")
     }
 }

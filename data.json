@@ -4,7 +4,8 @@
     {
       "id": "0node",
       "av": [
-        "1node"
+        "1node",
+        "2node"
       ],
       "pv": [],
       "Received": 5,
@@ -13,7 +14,18 @@
     {
       "id": "1node",
       "av": [
-        "0node"
+        "0node",
+        "2node"
+      ],
+      "pv": [],
+      "Received": 5,
+      "Sent": 6
+    },
+    {
+      "id": "2node",
+      "av": [
+        "0node",
+        "1node"
       ],
       "pv": [],
       "Received": 5,
