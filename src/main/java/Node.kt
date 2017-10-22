@@ -4,6 +4,8 @@ import akkanetwork.AkkaConstants.Companion.SYSTEM_NAME
 import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
 import com.typesafe.config.ConfigFactory
+import globalview.GVDependenciesWrapper
+import globalview.GlobalViewActor
 import partialview.PVDependenciesWrapper
 import partialview.PartialViewActor
 import systemsupervisor.SystemStatus
@@ -28,7 +30,11 @@ fun main(args: Array<String>) {
         contactNode = AkkaUtils.createNodeID(contactID)
     }
 
-    val pvWrapper = PVDependenciesWrapper(contactNode = contactNode, myID = myIdentifier)
-    val nodeRef = system.actorOf(PartialViewActor.props(pvWrapper), myIdentifier)
-    SystemStatus(pvWrapper, system)
+    AkkaUtils.createNodeID(myIdentifier)?.let {
+        val gvWrapper = GVDependenciesWrapper(nodeId = it)
+        val globalRef = system.actorOf(GlobalViewActor.props(gvWrapper), myIdentifier+"global")
+        val pvWrapper = PVDependenciesWrapper(contactNode = contactNode, myID = myIdentifier, globalViewActor = globalRef)
+        val partialRef = system.actorOf(PartialViewActor.props(pvWrapper), myIdentifier)
+        SystemStatus(pvWrapper, system)
+    }
 }

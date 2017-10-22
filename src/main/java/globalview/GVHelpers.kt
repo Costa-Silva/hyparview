@@ -12,6 +12,7 @@ class GVHelpers {
         // Global view configs
         const val PENDING_EVENTS_SIZE = 10
         const val EVENT_LIST_SIZE = 10
+        const val CHECK_IF_ALIVE_TIMEOUT_MS: Long = 500
 
         fun pendingEventsisFull(pendingEvents: MutableMap<UUID, Event>): Boolean {
             return pendingEvents.size>= PENDING_EVENTS_SIZE

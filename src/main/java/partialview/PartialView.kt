@@ -1,7 +1,6 @@
 package partialview
 import akka.actor.ActorContext
 import akka.actor.ActorRef
-import partialview.PVHelpers.Companion.TTSHUFFLE_MS
 import partialview.protocols.crashrecovery.CrashRecovery
 import partialview.protocols.crashrecovery.NeighborRequestResult
 import partialview.protocols.crashrecovery.Priority
@@ -21,14 +20,6 @@ class PartialView(private val pvWrapper: PVDependenciesWrapper, context: ActorCo
     private val membership = Membership(pvWrapper.activeView, viewOperations, self, crashRecovery)
     private val entropy = Entropy(pvWrapper.activeView, crashRecovery)
     private val gossip = Gossip(pvWrapper.activeView, self, pvWrapper.globalViewActor)
-    init {
-        val shuffleTask = object : TimerTask() {
-            override fun run() {
-                shuffle.shufflePassiveView()
-            }
-        }
-        Timer().schedule(shuffleTask ,0, TTSHUFFLE_MS)
-    }
 
     fun joinReceived(sender: ActorRef) {
         membership.join(sender)

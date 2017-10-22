@@ -16,7 +16,16 @@ class Shuffle(private val activeView: MutableSet<ActorRef>,
 
     private val samplesSent = mutableMapOf<UUID, MutableSet<ActorRef>>()
 
-    fun shufflePassiveView() {
+    init {
+        val shuffleTask = object : TimerTask() {
+            override fun run() {
+                shufflePassiveView()
+            }
+        }
+        Timer().scheduleAtFixedRate(shuffleTask ,0, PVHelpers.TTSHUFFLE_MS)
+    }
+
+    private fun shufflePassiveView() {
         val sample = mutableSetOf<ActorRef>()
         val uuid = UUID.randomUUID()
         val activeNodesToFind = Math.min(PVHelpers.N_ACTIVE_NODES_SHUFF, activeView.size)
