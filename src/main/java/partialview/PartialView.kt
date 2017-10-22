@@ -1,32 +1,25 @@
 package partialview
 import akka.actor.ActorContext
 import akka.actor.ActorRef
-import partialview.PVHelpers.Companion.TTSHUFFLE_MS
 import partialview.protocols.crashrecovery.CrashRecovery
 import partialview.protocols.crashrecovery.NeighborRequestResult
 import partialview.protocols.crashrecovery.Priority
 import partialview.protocols.entropy.Entropy
+import partialview.protocols.gossip.Gossip
+import partialview.protocols.gossip.messages.GossipMessage
+import partialview.protocols.gossip.messages.StatusMessageWrapper
 import partialview.protocols.membership.Membership
-import partialview.protocols.membership.messages.BroadcastMessage
 import partialview.protocols.suffle.Shuffle
 import java.util.*
 
-class PartialView(private val pvWrapper: PVDependenciesWrapper, context: ActorContext, private val self: ActorRef) {
+class PartialView(pvWrapper: PVDependenciesWrapper, context: ActorContext, self: ActorRef) {
 
     private val viewOperations = ViewOperations(pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView,self, context)
-    private val crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, self, viewOperations)
+    private val crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, self, viewOperations, pvWrapper.globalViewActor)
     private val shuffle = Shuffle(pvWrapper.activeView, pvWrapper.passiveView, viewOperations, self)
     private val membership = Membership(pvWrapper.activeView, viewOperations, self, crashRecovery)
     private val entropy = Entropy(pvWrapper.activeView, crashRecovery)
-
-    init {
-        val shuffleTask = object : TimerTask() {
-            override fun run() {
-                shuffle.shufflePassiveView()
-            }
-        }
-        Timer().schedule(shuffleTask ,0, TTSHUFFLE_MS)
-    }
+    private val gossip = Gossip(pvWrapper.activeView, self, pvWrapper.globalViewActor)
 
     fun joinReceived(sender: ActorRef) {
         membership.join(sender)
@@ -64,21 +57,19 @@ class PartialView(private val pvWrapper: PVDependenciesWrapper, context: ActorCo
         shuffle.shuffleReply(sample, uuid)
     }
 
+    fun broadcast(message: StatusMessageWrapper) {
+        gossip.broadcast(message)
+    }
+
+    fun gossipMessageReceived(message: GossipMessage) {
+        gossip.gossipMessage(message)
+    }
+
     fun cutTheWireReceived(disconnectNodeID: String) {
         entropy.cutTheWire(disconnectNodeID)
     }
 
     fun killReceived() {
         entropy.kill()
-    }
-
-    fun broadcast(message: BroadcastMessage) {
-        pvWrapper.activeView.forEach {
-            it.tell(message, self)
-        }
-    }
-
-    fun broadcastReceived(message: BroadcastMessage, sender: ActorRef) {
-        // TODO: partialDeliver (communication)
     }
 }

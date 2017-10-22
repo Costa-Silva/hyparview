@@ -115,7 +115,7 @@ class ViewOperations(private var activeView: MutableSet<ActorRef>,
             }
         }
 
-        timer.schedule(shufflePassiveActiveTask, 0, PVHelpers.TTSHUFFLE_MS)
+        timer.scheduleAtFixedRate(shufflePassiveActiveTask, 0, PVHelpers.TTSHUFFLE_MS)
     }
 
     private fun stopShufflePassiveActive() {

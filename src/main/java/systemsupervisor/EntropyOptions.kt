@@ -10,10 +10,10 @@ class EntropyOptions(val system: ActorSystem) {
     fun killOption() {
         print("NODEID: ")
         val node = readLine()
-        node?.let {
-            val nodeID = AkkaUtils.createNodeID(it)
-            if (!nodeID.ip.isEmpty()) {
-                system.actorOf(EntropyActor.props(EntropyOptions.KILL, arrayOf(nodeID)))
+        val nodeID = AkkaUtils.createNodeID(node)
+        nodeID?.let {
+            if (!it.ip.isEmpty()) {
+                system.actorOf(EntropyActor.props(EntropyOptions.KILL, arrayOf(it)))
             } else {
                 SystemStatus.printlnErr("UNKNOWN NODE!!!")
             }
@@ -27,7 +27,7 @@ class EntropyOptions(val system: ActorSystem) {
             val nodes = it.split(" ")
             val nodeID0 = AkkaUtils.createNodeID(nodes[0])
             val nodeID1 = AkkaUtils.createNodeID(nodes[1])
-            if (!nodeID0.ip.isEmpty() && !nodeID1.ip.isEmpty()) {
+            if (nodeID0 != null && nodeID1 != null && !nodeID0.ip.isEmpty() && !nodeID1.ip.isEmpty()) {
                 system.actorOf(EntropyActor.props(EntropyOptions.CUT_WIRE, arrayOf(nodeID0, nodeID1)))
             } else {
                 SystemStatus.printlnErr("UNKNOWN NODES!!!")
