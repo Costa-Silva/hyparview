@@ -3,6 +3,7 @@ package globalview
 import akka.actor.AbstractActor
 import akka.actor.Props
 import akkanetwork.AkkaConstants
+import akkanetwork.AkkaConstants.Companion.GLOBAL_ACTOR
 import akkanetwork.AkkaUtils
 import globalview.messages.*
 import partialview.protocols.gossip.messages.StatusMessageWrapper
@@ -10,7 +11,7 @@ import partialview.protocols.gossip.messages.StatusMessageWrapper
 class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
 
     private val globalView = GlobalView(gvWrapper.eventList, gvWrapper.pendingEvents, gvWrapper.toRemove,
-            gvWrapper.globalView, self, AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, gvWrapper.nodeId))
+            gvWrapper.globalView, self, AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, gvWrapper.nodeId, GLOBAL_ACTOR))
 
     companion object {
         fun props(gvWrapper: GVDependenciesWrapper): Props {

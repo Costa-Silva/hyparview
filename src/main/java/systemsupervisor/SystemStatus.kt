@@ -1,10 +1,12 @@
 package systemsupervisor
+import akka.actor.ActorRef
 import akka.actor.ActorSystem
-import partialview.PVDependenciesWrapper
 import partialview.PVHelpers
+import systemsupervisor.statuswriter.WriteStatus
 
 
-class SystemStatus(private val pvWrapper: PVDependenciesWrapper, private val system: ActorSystem) {
+class SystemStatus(private val system: ActorSystem,
+                   pvData: PartialViewSharedData, statusActor: ActorRef) {
 
     private val entropyOptions = EntropyOptions(system)
 
@@ -22,13 +24,13 @@ class SystemStatus(private val pvWrapper: PVDependenciesWrapper, private val sys
                 "0.1" -> printlnErr(PVHelpers.ACTIVE_VIEW_MAX_SIZE)
                 "0.2" -> printlnErr(PVHelpers.PASSIVE_VIEW_MAX_SIZE)
                 "0.3" -> printlnErr(PVHelpers.ACTIVE_PASSIVE_VIEW_SIZE)
-                "1.1" -> printlnErr(pvWrapper.contactNode)
-                "1.2" -> printlnErr("Active View: ${pvWrapper.activeView.map { it.path().name() }}")
-                "1.3" -> printlnErr("Passive View: ${pvWrapper.passiveView.map { it.path().name() }}")
-                "1.4" -> printlnErr("Passive Active view: ${pvWrapper.passiveActiveView.map { it.path().name() }}")
+                "1.1" -> printlnErr(pvData.contactNode)
+                "1.2" -> printlnErr("Active View: ${pvData.activeView.map { it.path().name() }}")
+                "1.3" -> printlnErr("Passive View: ${pvData.passiveView.map { it.path().name() }}")
+                "1.4" -> printlnErr("Passive Active view: ${pvData.passiveActiveView.map { it.path().name() }}")
                 "4.1" -> entropyOptions.cutTheWireOption()
                 "4.2" -> entropyOptions.killOption()
-                //"5.1" -> WriteStatus().writeToFile(pvWrapper)
+                "5.1" -> WriteStatus.writeToFile(pvData, statusActor)
                 else -> {println("Unknown command. Usage: 1.1")}
             }
         }

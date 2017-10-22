@@ -4,6 +4,7 @@ import akka.actor.AbstractActor
 import akka.actor.Props
 import akka.actor.Terminated
 import akkanetwork.AkkaConstants
+import akkanetwork.AkkaConstants.Companion.PARTIAL_ACTOR
 import akkanetwork.AkkaUtils
 import partialview.protocols.crashrecovery.messages.NeighborRequestMessage
 import partialview.protocols.crashrecovery.messages.NeighborRequestReplyMessage
@@ -31,7 +32,7 @@ class PartialViewActor(pvWrapper: PVDependenciesWrapper): AbstractActor() {
     init {
         // Ignore when it's the contact node joining the system
         pvWrapper.contactNode?.let {
-            val contactRemote = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, it)
+            val contactRemote = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, it, PARTIAL_ACTOR)
             contactRemote.tell(JoinMessage(), self)
         }
     }

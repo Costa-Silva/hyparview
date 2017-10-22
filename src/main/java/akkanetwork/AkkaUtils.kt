@@ -10,11 +10,11 @@ class AkkaUtils {
     companion object {
 
         fun numberFromIdentifier(id: String): Int {
-            return Integer.parseInt(id.split("node")[1])
+            return Integer.parseInt(id.split("node")[0])
         }
 
-        fun lookUpRemote(context: ActorContext, systemName: String, ip: NodeID): ActorSelection {
-            return context.actorSelection("akka.tcp://$systemName@$ip/user/${ip.identifier}")
+        fun lookUpRemote(context: ActorContext, systemName: String, ip: NodeID, type: String): ActorSelection {
+            return context.actorSelection("akka.tcp://$systemName@$ip/user/${ip.identifier+type}")
         }
 
         fun createNodeID(nodeID: String?): NodeID? {

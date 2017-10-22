@@ -1,5 +1,7 @@
 
 import akka.actor.ActorSystem
+import akkanetwork.AkkaConstants.Companion.GLOBAL_ACTOR
+import akkanetwork.AkkaConstants.Companion.STATUS_ACTOR
 import akkanetwork.AkkaConstants.Companion.SYSTEM_NAME
 import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
@@ -8,7 +10,9 @@ import globalview.GVDependenciesWrapper
 import globalview.GlobalViewActor
 import partialview.PVDependenciesWrapper
 import partialview.PartialViewActor
+import systemsupervisor.PartialViewSharedData
 import systemsupervisor.SystemStatus
+import systemsupervisor.statuswriter.StatusActor
 import java.util.*
 
 fun main(args: Array<String>) {
@@ -25,16 +29,19 @@ fun main(args: Array<String>) {
     var contactNode: NodeID? = null
 
     // Discover contact info logic
-    if(myIdentifier != "node0") {
-        val contactID = "node${Random().nextInt(AkkaUtils.numberFromIdentifier(myIdentifier))}"
+    if(myIdentifier != "0node") {
+        val contactID = "${Random().nextInt(AkkaUtils.numberFromIdentifier(myIdentifier))}node"
         contactNode = AkkaUtils.createNodeID(contactID)
     }
 
     AkkaUtils.createNodeID(myIdentifier)?.let {
         val gvWrapper = GVDependenciesWrapper(nodeId = it)
-        val globalRef = system.actorOf(GlobalViewActor.props(gvWrapper), myIdentifier+"global")
+        val globalRef = system.actorOf(GlobalViewActor.props(gvWrapper), myIdentifier+GLOBAL_ACTOR)
         val pvWrapper = PVDependenciesWrapper(contactNode = contactNode, myID = myIdentifier, globalViewActor = globalRef)
+        val partialViewShared = PartialViewSharedData(myIdentifier, contactNode, pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView)
         val partialRef = system.actorOf(PartialViewActor.props(pvWrapper), myIdentifier)
-        SystemStatus(pvWrapper, system)
+
+        val statusActor = system.actorOf(StatusActor.props(partialViewShared), myIdentifier+STATUS_ACTOR)
+        SystemStatus(system, partialViewShared, statusActor)
     }
 }
