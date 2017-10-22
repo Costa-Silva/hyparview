@@ -8,4 +8,4 @@ class PVDependenciesWrapper(val contactNode: NodeID?,
                             val passiveView: MutableSet<ActorRef> = mutableSetOf(),
                             val passiveActiveView: MutableSet<ActorRef> = mutableSetOf(),
                             val myID: String,
-                            var globalViewActor: ActorRef)
+                            val globalViewActor: ActorRef)

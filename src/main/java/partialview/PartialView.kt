@@ -12,10 +12,10 @@ import partialview.protocols.membership.Membership
 import partialview.protocols.suffle.Shuffle
 import java.util.*
 
-class PartialView(private val pvWrapper: PVDependenciesWrapper, context: ActorContext, private val self: ActorRef) {
+class PartialView(pvWrapper: PVDependenciesWrapper, context: ActorContext, self: ActorRef) {
 
     private val viewOperations = ViewOperations(pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView,self, context)
-    private val crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, self, viewOperations)
+    private val crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, self, viewOperations, pvWrapper.globalViewActor)
     private val shuffle = Shuffle(pvWrapper.activeView, pvWrapper.passiveView, viewOperations, self)
     private val membership = Membership(pvWrapper.activeView, viewOperations, self, crashRecovery)
     private val entropy = Entropy(pvWrapper.activeView, crashRecovery)

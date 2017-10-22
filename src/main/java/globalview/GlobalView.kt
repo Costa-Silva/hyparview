@@ -77,7 +77,7 @@ class GlobalView(private val eventList: LinkedList<UUID>,
         toRemove.remove(node)
     }
 
-    private fun globalMayBeDead(node: ActorRef) {
+    fun globalMayBeDead(node: ActorRef) {
         val uuid = UUID.randomUUID()
         addToEventList(uuid, Event(EventEnum.MAY_BE_DEAD, node))
         toRemove.add(node)

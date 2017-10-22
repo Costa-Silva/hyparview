@@ -4,10 +4,7 @@ import akka.actor.AbstractActor
 import akka.actor.Props
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
-import globalview.messages.ConflictMessage
-import globalview.messages.GiveGlobalMessage
-import globalview.messages.GlobalMessage
-import globalview.messages.PingMessage
+import globalview.messages.*
 import partialview.protocols.gossip.messages.StatusMessageWrapper
 
 class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
@@ -23,11 +20,14 @@ class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
 
     override fun createReceive(): Receive {
         return receiveBuilder()
-                .match(StatusMessageWrapper::class.java) { globalView.partialDeliver(it) }
                 .match(GlobalMessage::class.java) { globalView.receivedGlobalMessage(it.globalView, it.eventList)}
                 .match(GiveGlobalMessage::class.java) { globalView.giveGlobalReceived(sender) }
                 .match(ConflictMessage::class.java) { globalView.conflictMessageReceived(it.myGlobalView) }
                 .match(PingMessage::class.java) { sender.tell(true, sender) }
+
+                // Internal messages
+                .match(StatusMessageWrapper::class.java) { globalView.partialDeliver(it) }
+                .match(MayBeDeadMessage::class.java) { globalView.globalMayBeDead(it.node) }
                 .build()
 
     }
