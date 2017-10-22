@@ -2,6 +2,8 @@ package globalview
 
 import akka.actor.AbstractActor
 import akka.actor.Props
+import globalview.messages.ConflictMessage
+import globalview.messages.GiveGlobalMessage
 import partialview.protocols.gossip.messages.StatusMessageWrapper
 
 class GlobalViewActor(gvWrapper: GVDependenciesActor): AbstractActor() {
@@ -17,7 +19,9 @@ class GlobalViewActor(gvWrapper: GVDependenciesActor): AbstractActor() {
 
     override fun createReceive(): Receive {
         return receiveBuilder()
-                .match(StatusMessageWrapper::class.java) { globalView.comDeliver(it) }
+                .match(StatusMessageWrapper::class.java) { globalView.partialDeliver(it) }
+                .match(GiveGlobalMessage::class.java) { globalView.giveGlobalReceived() }
+                .match(ConflictMessage::class.java) { globalView.conflictMessageReceived(it.myGlobalView) }
                 .build()
 
     }

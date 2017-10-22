@@ -24,7 +24,7 @@ fun main(args: Array<String>) {
 
     // Discover contact info logic
     if(myIdentifier != "node0") {
-        val contactID = "node${Random().nextInt(Integer.parseInt(myIdentifier.split("node")[1]))}"
+        val contactID = "node${Random().nextInt(AkkaUtils.numberFromIdentifier(myIdentifier))}"
         contactNode = AkkaUtils.createNodeID(contactID)
     }
 

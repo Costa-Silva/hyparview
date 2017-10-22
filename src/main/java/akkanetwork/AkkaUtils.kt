@@ -8,6 +8,11 @@ import java.util.*
 
 class AkkaUtils {
     companion object {
+
+        fun numberFromIdentifier(id: String): Int {
+            return Integer.parseInt(id.split("node")[1])
+        }
+
         fun lookUpRemote(context: ActorContext, systemName: String, ip: NodeID): ActorSelection {
             return context.actorSelection("akka.tcp://$systemName@$ip/user/${ip.identifier}")
         }

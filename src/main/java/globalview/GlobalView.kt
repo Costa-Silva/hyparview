@@ -1,11 +1,14 @@
 package globalview
 
 import akka.actor.ActorRef
+import akkanetwork.AkkaUtils
 import globalview.GVHelpers.Companion.MAY_BE_DEAD_PERIOD_MS
 import globalview.GVHelpers.Companion.SEND_EVENTS_PERIOD_MS
 import globalview.GVHelpers.Companion.SEND_HASH_PERIOD_MS
 import globalview.GVHelpers.Companion.eventListisFull
 import globalview.GVHelpers.Companion.pendingEventsisFull
+import globalview.messages.ConflictMessage
+import globalview.messages.GiveGlobalMessage
 import globalview.messages.GlobalMessage
 import globalview.messages.StatusMessage
 import partialview.protocols.gossip.messages.StatusMessageWrapper
@@ -116,7 +119,97 @@ class GlobalView(private val eventList: LinkedList<UUID>,
     }
 
     fun partialDeliver(message: StatusMessageWrapper) {
-        val status = message.statusMessage
+        val hash = message.statusMessage.hash
+        val newEvents = message.statusMessage.pendingEvents
+        val toRemoveIsEmpty = message.statusMessage.toRemoveIsEmpty
         val senderID = message.sender
+
+        var compareHash = false
+
+        if (pendingEvents.isEmpty() && toRemoveIsEmpty) {
+            compareHash = true
+        }
+
+        val gottaGoFastSet = mutableSetOf<UUID>()
+        gottaGoFastSet.addAll(eventList)
+
+
+        newEvents.forEach {
+            val removeNodeTask = object : TimerTask() {
+                override fun run() {
+                    remove(it.value.node)
+                    timersMayBeDead.remove(it.key)
+                }
+            }
+
+            if(!gottaGoFastSet.contains(it.key)) {
+                addToEventList(it.key, it.value)
+                val type = it.value.event
+                val node = it.value.node
+                if (type == EventEnum.NEW_NODE) {
+                    globalAdd(node, false)
+                } else if (type == EventEnum.MAY_BE_DEAD) {
+                    if(node != self) {
+                        toRemove.add(node)
+                        val timer = Timer()
+                        timer.schedule(removeNodeTask, MAY_BE_DEAD_PERIOD_MS)
+                        timersMayBeDead.put(it.key, timer)
+                    } else {
+                      imAlive()
+                    }
+                } else if (type == EventEnum.STILL_ALIVE) {
+                    if(toRemove.contains(node)) {
+                        toRemove.remove(node)
+                        timersMayBeDead.remove(it.key)?.cancel()
+                    } else {
+                        globalAdd(it.value.node, false)
+                    }
+                }
+
+            }
+        }
+        if(compareHash && toRemove.isEmpty()) {
+            globalCompare(hash,senderID)
+        }
+    }
+
+    private fun globalCompare(hash: Int, sender: ActorRef) {
+        val myHash = globalView.hashCode()
+        if (myHash != hash) {
+            val myNumber = AkkaUtils.numberFromIdentifier(self.path().name())
+            val enemyNumber = AkkaUtils.numberFromIdentifier(sender.path().name())
+            if (enemyNumber>myNumber) {
+                sender.tell(ConflictMessage(globalView), self)
+            } else {
+                sender.tell(GiveGlobalMessage(), self)
+            }
+        }
+    }
+
+    fun giveGlobalReceived(sender: ActorRef) {
+        sender.tell(ConflictMessage(globalView), self)
+    }
+
+    fun conflictMessageReceived(otherGlobalView: MutableSet<ActorRef>) {
+        otherGlobalView
+                .filter { !globalView.contains(it) }
+                .forEach { node ->
+                    val isAlive = checkIfAlive()
+                    if(isAlive) {
+                        globalNewNode(node, false)
+                    } else {
+                        addToEventList(UUID.randomUUID(), Event(EventEnum.MAY_BE_DEAD, node))
+                    }
+                }
+        globalView
+                .filter { !otherGlobalView.contains(it) }
+                .forEach { node ->
+                    val isAlive = checkIfAlive()
+                    if(isAlive) {
+                        addToEventList(UUID.randomUUID() ,Event(EventEnum.STILL_ALIVE, node))
+                    } else {
+                        globalMayBeDead(node)
+                    }
+                }
     }
 }
