@@ -1,4 +1,4 @@
-package partialview
+package partialview.wrappers
 
 import akka.actor.ActorRef
 import akkanetwork.NodeID

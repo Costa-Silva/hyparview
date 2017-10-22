@@ -8,7 +8,7 @@ import akkanetwork.NodeID
 import com.google.gson.*
 import scala.concurrent.Await
 import scala.concurrent.duration.FiniteDuration
-import systemsupervisor.PartialViewSharedData
+import partialview.wrappers.PartialViewSharedData
 import systemsupervisor.graph.NodeStateMessage
 import systemsupervisor.statuswriter.messages.RequestFromAppMessage
 import java.io.FileWriter

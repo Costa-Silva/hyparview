@@ -8,9 +8,9 @@ import akkanetwork.NodeID
 import com.typesafe.config.ConfigFactory
 import globalview.GVDependenciesWrapper
 import globalview.GlobalViewActor
-import partialview.PVDependenciesWrapper
+import partialview.wrappers.PVDependenciesWrapper
 import partialview.PartialViewActor
-import systemsupervisor.PartialViewSharedData
+import partialview.wrappers.PartialViewSharedData
 import systemsupervisor.SystemStatus
 import systemsupervisor.statuswriter.StatusActor
 import java.util.*

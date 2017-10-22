@@ -2,6 +2,7 @@ package systemsupervisor
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import partialview.PVHelpers
+import partialview.wrappers.PartialViewSharedData
 import systemsupervisor.statuswriter.WriteStatus
 
 

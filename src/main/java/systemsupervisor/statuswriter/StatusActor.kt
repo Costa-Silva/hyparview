@@ -6,7 +6,7 @@ import akka.actor.Props
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaConstants.Companion.STATUS_ACTOR
 import akkanetwork.AkkaUtils
-import systemsupervisor.PartialViewSharedData
+import partialview.wrappers.PartialViewSharedData
 import systemsupervisor.graph.NodeStateMessage
 import systemsupervisor.statuswriter.messages.RequestFromAppMessage
 import systemsupervisor.statuswriter.messages.RequestStatusMessage

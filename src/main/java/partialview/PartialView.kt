@@ -10,6 +10,7 @@ import partialview.protocols.gossip.messages.GossipMessage
 import partialview.protocols.gossip.messages.StatusMessageWrapper
 import partialview.protocols.membership.Membership
 import partialview.protocols.suffle.Shuffle
+import partialview.wrappers.PVDependenciesWrapper
 import java.util.*
 
 class PartialView(pvWrapper: PVDependenciesWrapper, context: ActorContext, self: ActorRef) {

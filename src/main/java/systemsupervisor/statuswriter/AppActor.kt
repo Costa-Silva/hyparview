@@ -1,4 +1,4 @@
-package systemsupervisor.app
+package systemsupervisor.statuswriter
 
 import akka.actor.AbstractActor
 import akka.actor.Props

@@ -18,6 +18,7 @@ import partialview.protocols.membership.messages.ForwardJoinMessage
 import partialview.protocols.membership.messages.JoinMessage
 import partialview.protocols.suffle.messages.ShuffleMessage
 import partialview.protocols.suffle.messages.ShuffleReplyMessage
+import partialview.wrappers.PVDependenciesWrapper
 
 class PartialViewActor(pvWrapper: PVDependenciesWrapper): AbstractActor() {
 
