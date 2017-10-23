@@ -10,7 +10,11 @@ import globalview.GVHelpers.Companion.SEND_EVENTS_PERIOD_MS
 import globalview.GVHelpers.Companion.SEND_HASH_PERIOD_MS
 import globalview.GVHelpers.Companion.eventListisFull
 import globalview.GVHelpers.Companion.pendingEventsisFull
-import globalview.messages.*
+import globalview.messages.external.ConflictMessage
+import globalview.messages.external.GiveGlobalMessage
+import globalview.messages.external.GlobalMessage
+import globalview.messages.external.PingMessage
+import globalview.messages.internal.StatusMessage
 import partialview.protocols.gossip.messages.StatusMessageWrapper
 import scala.concurrent.Await
 import scala.concurrent.duration.FiniteDuration
@@ -93,7 +97,7 @@ class GlobalView(private val eventList: LinkedList<UUID>,
         timersMayBeDead.put(uuid, timer)
     }
 
-    private fun globalNewNode(newNode: ActorRef, needsGlobal: Boolean) {
+    fun globalNewNode(newNode: ActorRef, needsGlobal: Boolean) {
         val uuid = UUID.randomUUID()
         addToEventList(uuid, Event(EventEnum.NEW_NODE, newNode))
         globalAdd(newNode, needsGlobal)

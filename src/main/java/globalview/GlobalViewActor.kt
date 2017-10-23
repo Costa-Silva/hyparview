@@ -5,7 +5,12 @@ import akka.actor.Props
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaConstants.Companion.GLOBAL_ACTOR
 import akkanetwork.AkkaUtils
-import globalview.messages.*
+import globalview.messages.external.ConflictMessage
+import globalview.messages.external.GiveGlobalMessage
+import globalview.messages.external.GlobalMessage
+import globalview.messages.external.PingMessage
+import globalview.messages.internal.MayBeDeadMessage
+import globalview.messages.internal.PartialDiscoveredNewNode
 import partialview.protocols.gossip.messages.StatusMessageWrapper
 
 class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
@@ -29,6 +34,7 @@ class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
                 // Internal messages
                 .match(StatusMessageWrapper::class.java) { globalView.partialDeliver(it) }
                 .match(MayBeDeadMessage::class.java) { globalView.globalMayBeDead(it.node) }
+                .match(PartialDiscoveredNewNode::class.java) { globalView.globalNewNode(it.newNode, true) }
                 .build()
 
     }

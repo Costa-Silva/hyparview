@@ -1,4 +1,4 @@
-package globalview.messages
+package globalview.messages.internal
 
 import globalview.Event
 import java.io.Serializable

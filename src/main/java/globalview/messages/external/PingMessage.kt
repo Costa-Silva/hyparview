@@ -1,4 +1,4 @@
-package globalview.messages
+package globalview.messages.external
 
 import java.io.Serializable
 

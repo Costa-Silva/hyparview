@@ -1,4 +1,4 @@
-package globalview.messages
+package globalview.messages.internal
 
 import akka.actor.ActorRef
 import java.io.Serializable
