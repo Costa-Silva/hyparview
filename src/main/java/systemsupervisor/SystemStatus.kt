@@ -6,7 +6,7 @@ import partialview.wrappers.PartialViewSharedData
 import systemsupervisor.statuswriter.WriteStatus
 
 
-class SystemStatus(private val system: ActorSystem,
+class SystemStatus(system: ActorSystem,
                    pvData: PartialViewSharedData, statusActor: ActorRef) {
 
     private val entropyOptions = EntropyOptions(system)
@@ -29,6 +29,11 @@ class SystemStatus(private val system: ActorSystem,
                 "1.2" -> printlnErr("Active View: ${pvData.activeView.map { it.path().name() }}")
                 "1.3" -> printlnErr("Passive View: ${pvData.passiveView.map { it.path().name() }}")
                 "1.4" -> printlnErr("Passive Active view: ${pvData.passiveActiveView.map { it.path().name() }}")
+                "1.5" -> printlnErr("Received: ${pvData.mCounter.joinsReceived}")
+                "1.6" -> printlnErr("Sent: ${pvData.mCounter.forwardJoinsSent} Received: ${pvData.mCounter.forwardJoinsReceived}")
+                "1.7" -> printlnErr("Sent: ${pvData.mCounter.neighborRequestsSent} Received: ${pvData.mCounter.neighborRequestsReceived}")
+                "1.8" -> printlnErr("Sent: ${pvData.mCounter.shufflesSent} Received: ${pvData.mCounter.shufflesReceived}")
+                "1.9" -> printlnErr("Sent: ${pvData.mCounter.disconnectsSent} Received: ${pvData.mCounter.disconnectsReceived}")
                 "4.1" -> entropyOptions.cutTheWireOption()
                 "4.2" -> entropyOptions.killOption()
                 "5.1" -> WriteStatus.writeToFile(pvData, statusActor)
@@ -48,6 +53,11 @@ class SystemStatus(private val system: ActorSystem,
         println("2)Active View -> 1.2")
         println("3)Passive View -> 1.3")
         println("4)Passive Active View -> 1.4")
+        println("5)Joins Received -> 1.5")
+        println("6)Forward joins -> 1.6")
+        println("7)Neighbor requests -> 1.7")
+        println("8)Shuffles -> 1.8")
+        println("9)Disconnects -> 1.9")
 
         println("\nEntropy commands.")
         println("1)Cut the wire between 2 nodes: 4.1")

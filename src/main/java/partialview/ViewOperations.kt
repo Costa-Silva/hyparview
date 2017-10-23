@@ -10,7 +10,8 @@ class ViewOperations(private var activeView: MutableSet<ActorRef>,
                      private var passiveView: MutableSet<ActorRef>,
                      private var passiveActiveView: MutableSet<ActorRef>,
                      private var self: ActorRef,
-                     private var context: ActorContext) {
+                     private var context: ActorContext,
+                     private val mCounter: PVMessagesCounter) {
 
     private var timer = Timer()
     private var watchSet = mutableSetOf<ActorRef>()
@@ -87,6 +88,7 @@ class ViewOperations(private var activeView: MutableSet<ActorRef>,
     private fun dropRandomElementFromActiveView() {
         val node = AkkaUtils.chooseRandom(activeView)
         node?.let {
+            mCounter.disconnectsSent++
             it.tell(DisconnectMessage(), self)
             activeToPassive(it)
         }

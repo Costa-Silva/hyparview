@@ -2,8 +2,11 @@ package partialview.wrappers
 
 import akka.actor.ActorRef
 import akkanetwork.NodeID
+import partialview.PVMessagesCounter
 import java.io.Serializable
 
-class PartialViewSharedData(val identifier: String, val contactNode: NodeID?, val activeView: MutableSet<ActorRef>,
+class PartialViewSharedData(val identifier: String, val contactNode: NodeID?,
+                            val activeView: MutableSet<ActorRef>,
                             val passiveView: MutableSet<ActorRef>,
-                            val passiveActiveView: MutableSet<ActorRef>): Serializable
+                            val passiveActiveView: MutableSet<ActorRef>,
+                            val mCounter: PVMessagesCounter): Serializable

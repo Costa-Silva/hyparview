@@ -15,10 +15,10 @@ import java.util.*
 
 class PartialView(pvWrapper: PVDependenciesWrapper, context: ActorContext, self: ActorRef) {
 
-    private val viewOperations = ViewOperations(pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView,self, context)
-    private val crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, self, viewOperations, pvWrapper.globalViewActor)
-    private val shuffle = Shuffle(pvWrapper.activeView, pvWrapper.passiveView, viewOperations, self)
-    private val membership = Membership(pvWrapper.activeView, viewOperations, self, crashRecovery)
+    private val viewOperations = ViewOperations(pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView,self, context, pvWrapper.mCounter)
+    private val crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, self, viewOperations, pvWrapper.globalViewActor, pvWrapper.mCounter)
+    private val shuffle = Shuffle(pvWrapper.activeView, pvWrapper.passiveView, viewOperations, self, pvWrapper.mCounter)
+    private val membership = Membership(pvWrapper.activeView, viewOperations, self, crashRecovery, pvWrapper.mCounter)
     private val entropy = Entropy(pvWrapper.activeView, crashRecovery)
     private val gossip = Gossip(pvWrapper.activeView, self, pvWrapper.globalViewActor)
 

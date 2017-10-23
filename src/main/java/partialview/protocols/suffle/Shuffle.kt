@@ -4,6 +4,7 @@ import akka.actor.ActorRef
 import akkanetwork.AkkaUtils
 import partialview.PVHelpers
 import partialview.PVHelpers.Companion.PASSIVE_VIEW_MAX_SIZE
+import partialview.PVMessagesCounter
 import partialview.ViewOperations
 import partialview.protocols.suffle.messages.ShuffleMessage
 import partialview.protocols.suffle.messages.ShuffleReplyMessage
@@ -12,7 +13,8 @@ import java.util.*
 class Shuffle(private val activeView: MutableSet<ActorRef>,
               private val passiveView: MutableSet<ActorRef>,
               private val viewOperations: ViewOperations,
-              private var self: ActorRef) {
+              private var self: ActorRef,
+              private val mCounter: PVMessagesCounter) {
 
     private val samplesSent = mutableMapOf<UUID, MutableSet<ActorRef>>()
 
@@ -39,16 +41,21 @@ class Shuffle(private val activeView: MutableSet<ActorRef>,
 
         val actor = AkkaUtils.chooseRandom(activeView)
         actor?.let {
+            mCounter.shufflesSent++
             samplesSent.put(uuid, sample)
             it.tell(ShuffleMessage(sample, PVHelpers.SHUFFLE_TTL, uuid, self), self)
         }
     }
 
     fun shuffle(sample: MutableSet<ActorRef>, timeToLive: Int, uuid: UUID, origin: ActorRef, sender: ActorRef) {
+        mCounter.shufflesReceived++
         val newTLL = timeToLive - 1
         if (newTLL > 0 && activeView.size > 1) {
             val actor = AkkaUtils.chooseRandomWithout(mutableSetOf(origin, sender), activeView)
-            actor?.tell(ShuffleMessage(sample, newTLL, uuid, origin), self)
+            actor?.let {
+                mCounter.shufflesSent++
+                it.tell(ShuffleMessage(sample, newTLL, uuid, origin), self)
+            }
         } else {
             val passiveNodesToFind = Math.min(sample.size - 1, passiveView.size)
             val randomPassiveNodes = populateSample(passiveNodesToFind, passiveView)

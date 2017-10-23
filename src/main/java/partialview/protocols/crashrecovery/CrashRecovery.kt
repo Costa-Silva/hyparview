@@ -4,6 +4,7 @@ import akka.actor.ActorRef
 import akkanetwork.AkkaUtils
 import globalview.messages.MayBeDeadMessage
 import partialview.PVHelpers
+import partialview.PVMessagesCounter
 import partialview.ViewOperations
 import partialview.protocols.crashrecovery.messages.NeighborRequestMessage
 import partialview.protocols.crashrecovery.messages.NeighborRequestReplyMessage
@@ -12,7 +13,8 @@ class CrashRecovery(private val activeView: MutableSet<ActorRef>,
                     private val passiveActiveView: MutableSet<ActorRef>,
                     private val self: ActorRef,
                     private val viewOperations: ViewOperations,
-                    private val gvActor: ActorRef ) {
+                    private val gvActor: ActorRef,
+                    private val mCounter: PVMessagesCounter) {
 
     private val ongoingNeighborRequests = mutableSetOf<ActorRef>()
 
@@ -30,12 +32,14 @@ class CrashRecovery(private val activeView: MutableSet<ActorRef>,
     fun sendNeighborRequest(priority: Priority) {
         val actor = AkkaUtils.chooseRandomWithout(ongoingNeighborRequests, passiveActiveView)
         actor?.let {
+            mCounter.neighborRequestsSent++
             ongoingNeighborRequests.add(it)
             it.tell(NeighborRequestMessage(priority), self)
         }
     }
 
     fun neighborRequest(priority: Priority, sender: ActorRef) {
+        mCounter.neighborRequestsReceived++
         var result = NeighborRequestResult.DECLINED
             if(priority == Priority.HIGH || !PVHelpers.activeViewisFull(activeView)) {
                 viewOperations.passiveToActive(sender)
@@ -51,6 +55,7 @@ class CrashRecovery(private val activeView: MutableSet<ActorRef>,
             val actor = AkkaUtils.chooseRandomWithout(ongoingNeighborRequests, passiveActiveView)
             actor?.let {
                 val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
+                mCounter.neighborRequestsSent++
                 ongoingNeighborRequests.add(it)
                 it.tell(NeighborRequestMessage(priority), self)
             }

@@ -55,7 +55,7 @@ class WriteStatus {
                 val filepath = Paths.get(System.getProperty("user.dir"), "data.json").toString()
                 FileWriter(filepath).use({ file ->
                     file.write(prettyJsonString)
-                    println("Saved state!")
+                    System.err.println("Saved state!")
                 })
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -90,8 +90,21 @@ class WriteStatus {
             }
             nodeInfo.add("av", av)
             nodeInfo.add("pv", pv)
-            nodeInfo.addProperty("Received",5)
-            nodeInfo.addProperty("Sent",6)
+
+            val mCounter = pvData.mCounter
+            nodeInfo.addProperty("JoinsReceived", mCounter.joinsReceived)
+
+            nodeInfo.addProperty("ForwardJoinsReceived", mCounter.forwardJoinsReceived)
+            nodeInfo.addProperty("ForwardJoinsSent", mCounter.forwardJoinsSent)
+
+            nodeInfo.addProperty("NeighborRequestsReceived", mCounter.neighborRequestsReceived)
+            nodeInfo.addProperty("NeighborRequestsSent", mCounter.neighborRequestsSent)
+
+            nodeInfo.addProperty("DisconnectsReceived", mCounter.disconnectsReceived)
+            nodeInfo.addProperty("DisconnectsSent", mCounter.disconnectsSent)
+
+            nodeInfo.addProperty("ShufflesReceived", mCounter.shufflesReceived)
+            nodeInfo.addProperty("ShufflesSent", mCounter.shufflesSent)
             return nodeInfo
         }
     }
