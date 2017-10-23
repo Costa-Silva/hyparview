@@ -1,13 +1,14 @@
 package systemsupervisor
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
+import globalview.GVSharedData
 import partialview.PVHelpers
 import partialview.wrappers.PartialViewSharedData
 import systemsupervisor.statuswriter.WriteStatus
 
 
-class SystemStatus(system: ActorSystem,
-                   pvData: PartialViewSharedData, statusActor: ActorRef) {
+class SystemStatus(system: ActorSystem, pvData: PartialViewSharedData, gvData: GVSharedData,
+                   statusActor: ActorRef) {
 
     private val entropyOptions = EntropyOptions(system)
 
@@ -34,11 +35,16 @@ class SystemStatus(system: ActorSystem,
                 "1.7" -> printlnErr("Sent: ${pvData.mCounter.neighborRequestsSent} Received: ${pvData.mCounter.neighborRequestsReceived}")
                 "1.8" -> printlnErr("Sent: ${pvData.mCounter.shufflesSent} Received: ${pvData.mCounter.shufflesReceived}")
                 "1.9" -> printlnErr("Sent: ${pvData.mCounter.disconnectsSent} Received: ${pvData.mCounter.disconnectsReceived}")
+                "2.1" -> printlnErr("Global view: ${gvData.globalView.map { it.path().name()}}")
+                "2.2" -> printlnErr("Event list: ${gvData.eventList.map { gvData.pendingEvents[it] }}")
+                "2.3" -> printlnErr("Pending events: ${gvData.pendingEvents.values}")
+                "2.4" -> printlnErr("Nodes that might be dead: ${gvData.toRemove.map { it.path().name()}}")
                 "4.1" -> entropyOptions.cutTheWireOption()
                 "4.2" -> entropyOptions.killOption()
                 "5.1" -> WriteStatus.writeToFile(pvData, statusActor)
                 else -> {println("Unknown command. Usage: 1.1")}
             }
+            Thread.sleep(2000)
         }
     }
 
@@ -58,6 +64,12 @@ class SystemStatus(system: ActorSystem,
         println("7)Neighbor requests -> 1.7")
         println("8)Shuffles -> 1.8")
         println("9)Disconnects -> 1.9")
+
+        println("\nGlobal View commands.")
+        println("1)Global view -> 2.1")
+        println("2)Event list -> 2.2")
+        println("3)Pending events -> 2.3")
+        println("4)Nodes that might be dead -> 2.4")
 
         println("\nEntropy commands.")
         println("1)Cut the wire between 2 nodes: 4.1")

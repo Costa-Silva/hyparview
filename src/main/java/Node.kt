@@ -7,6 +7,7 @@ import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
 import com.typesafe.config.ConfigFactory
 import globalview.GVDependenciesWrapper
+import globalview.GVSharedData
 import globalview.GlobalViewActor
 import partialview.PartialViewActor
 import partialview.wrappers.PVDependenciesWrapper
@@ -38,10 +39,13 @@ fun main(args: Array<String>) {
         val gvWrapper = GVDependenciesWrapper(nodeId = it)
         val globalRef = system.actorOf(GlobalViewActor.props(gvWrapper), myIdentifier+GLOBAL_ACTOR)
         val pvWrapper = PVDependenciesWrapper(contactNode = contactNode, globalViewActor = globalRef)
-        val partialViewShared = PartialViewSharedData(myIdentifier, contactNode, pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView, pvWrapper.mCounter)
+
         val partialRef = system.actorOf(PartialViewActor.props(pvWrapper), myIdentifier)
 
+        val gvSharedData = GVSharedData(gvWrapper.eventList, gvWrapper.pendingEvents, gvWrapper.toRemove, gvWrapper.globalView)
+        val partialViewShared = PartialViewSharedData(myIdentifier, contactNode, pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView, pvWrapper.mCounter)
+
         val statusActor = system.actorOf(StatusActor.props(partialViewShared), myIdentifier+STATUS_ACTOR)
-        SystemStatus(system, partialViewShared, statusActor)
+        SystemStatus(system, partialViewShared, gvSharedData, statusActor)
     }
 }

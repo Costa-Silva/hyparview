@@ -28,7 +28,7 @@ class GlobalView(private val eventList: LinkedList<UUID>,
                  private val self: ActorRef,
                  private val pvActor: ActorSelection) {
 
-    val timerSendEvents = Timer()
+    var timerSendEvents = Timer()
     val timersMayBeDead = mutableMapOf<UUID, Timer>()
 
     private val sendEventsTask = object : TimerTask() {
@@ -105,6 +105,7 @@ class GlobalView(private val eventList: LinkedList<UUID>,
 
     private fun addToEventList(eventId: UUID, event: Event) {
         if(pendingEvents.isEmpty()) {
+            timerSendEvents = Timer()
             timerSendEvents.schedule(sendEventsTask, SEND_EVENTS_PERIOD_MS)
         } else if(event.node == self && event.event == EventEnum.MAY_BE_DEAD) {
             timerSendEvents.cancel()
