@@ -32,8 +32,8 @@ class PartialViewActor(pvWrapper: PVDependenciesWrapper): AbstractActor() {
 
     init {
         // Ignore when it's the contact node joining the system
-        pvWrapper.contactNode?.let {
-            val contactRemote = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, it, PARTIAL_ACTOR)
+        if(pvWrapper.contactNode != null && pvWrapper.contactNode != pvWrapper.myID) {
+            val contactRemote = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, pvWrapper.contactNode, PARTIAL_ACTOR)
             contactRemote.tell(JoinMessage(pvWrapper.globalViewActor), self)
         }
     }

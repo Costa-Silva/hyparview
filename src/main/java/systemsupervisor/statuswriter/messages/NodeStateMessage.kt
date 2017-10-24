@@ -1,6 +1,6 @@
 package systemsupervisor.graph
 
-import partialview.wrappers.PartialViewSharedData
+import partialview.wrappers.PVSharedData
 import java.io.Serializable
 
-class NodeStateMessage(val partialViewData: PartialViewSharedData): Serializable
+class NodeStateMessage(val partialViewData: PVSharedData): Serializable

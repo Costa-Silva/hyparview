@@ -16,7 +16,8 @@ import partialview.protocols.gossip.messages.StatusMessageWrapper
 class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
 
     private val globalView = GlobalView(gvWrapper.eventList, gvWrapper.pendingEvents, gvWrapper.toRemove,
-            gvWrapper.globalView, self, AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, gvWrapper.nodeId, PARTIAL_ACTOR))
+            gvWrapper.globalView, self, AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME,
+            gvWrapper.nodeId, PARTIAL_ACTOR), gvWrapper.imContact)
 
     companion object {
         fun props(gvWrapper: GVDependenciesWrapper): Props {

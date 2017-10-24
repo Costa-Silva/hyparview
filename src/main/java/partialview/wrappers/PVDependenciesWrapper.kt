@@ -6,6 +6,7 @@ import partialview.PVMessagesCounter
 
 
 class PVDependenciesWrapper(val contactNode: NodeID?,
+                            val myID: NodeID,
                             val activeView: MutableSet<ActorRef> = mutableSetOf(),
                             val passiveView: MutableSet<ActorRef> = mutableSetOf(),
                             val passiveActiveView: MutableSet<ActorRef> = mutableSetOf(),

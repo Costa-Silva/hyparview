@@ -26,7 +26,8 @@ class GlobalView(private val eventList: LinkedList<UUID>,
                  private val toRemove: MutableSet<ActorRef>,
                  private val globalView: MutableSet<ActorRef>,
                  private val self: ActorRef,
-                 private val pvActor: ActorSelection) {
+                 private val pvActor: ActorSelection,
+                 imContact: Boolean) {
 
     var timerSendEvents = Timer()
     val timersMayBeDead = mutableMapOf<UUID, Timer>()
@@ -38,6 +39,10 @@ class GlobalView(private val eventList: LinkedList<UUID>,
     }
 
     init {
+
+        if(imContact){
+            globalNewNode(self, false)
+        }
         val sendHash = object : TimerTask() {
             override fun run() {
                 timerSendEvents.cancel()
@@ -57,6 +62,7 @@ class GlobalView(private val eventList: LinkedList<UUID>,
     }
 
     private fun globalAdd(newNode: ActorRef, needsGlobal: Boolean) {
+        println("adicionei: ${newNode}@@@@@@@@@@@@@@@@@@@@@@")
         globalView.add(newNode)
         if (needsGlobal) {
             sendGlobalMessage(newNode)

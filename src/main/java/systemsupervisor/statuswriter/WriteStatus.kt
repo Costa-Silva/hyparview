@@ -6,7 +6,7 @@ import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
 import com.google.gson.*
-import partialview.wrappers.PartialViewSharedData
+import partialview.wrappers.PVSharedData
 import scala.concurrent.Await
 import scala.concurrent.duration.FiniteDuration
 import systemsupervisor.graph.NodeStateMessage
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
 class WriteStatus {
 
     companion object {
-        fun writeToFile(pvData: PartialViewSharedData, statusActor: ActorRef) {
+        fun writeToFile(pvData: PVSharedData, statusActor: ActorRef) {
             val ERRORS_ALLOWED = 5
             var errorCount = 0
             val root = JsonObject()
@@ -75,7 +75,7 @@ class WriteStatus {
             return null
         }
 
-        private fun createNodeInfo(pvData: PartialViewSharedData): JsonObject {
+        private fun createNodeInfo(pvData: PVSharedData): JsonObject {
             val nodeInfo = JsonObject()
             nodeInfo.addProperty("id", pvData.identifier)
 

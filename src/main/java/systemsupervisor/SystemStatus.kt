@@ -3,11 +3,11 @@ import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import globalview.GVSharedData
 import partialview.PVHelpers
-import partialview.wrappers.PartialViewSharedData
+import partialview.wrappers.PVSharedData
 import systemsupervisor.statuswriter.WriteStatus
 
 
-class SystemStatus(system: ActorSystem, pvData: PartialViewSharedData, gvData: GVSharedData,
+class SystemStatus(system: ActorSystem, pvData: PVSharedData, gvData: GVSharedData,
                    statusActor: ActorRef) {
 
     private val entropyOptions = EntropyOptions(system)

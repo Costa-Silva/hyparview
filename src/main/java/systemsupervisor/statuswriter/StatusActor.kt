@@ -6,18 +6,18 @@ import akka.actor.Props
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaConstants.Companion.STATUS_ACTOR
 import akkanetwork.AkkaUtils
-import partialview.wrappers.PartialViewSharedData
+import partialview.wrappers.PVSharedData
 import systemsupervisor.graph.NodeStateMessage
 import systemsupervisor.statuswriter.messages.RequestFromAppMessage
 import systemsupervisor.statuswriter.messages.RequestStatusMessage
 import java.util.*
 
-class StatusActor(private val partialViewData: PartialViewSharedData): AbstractActor() {
+class StatusActor(private val partialViewData: PVSharedData): AbstractActor() {
 
     private val appReferences = LinkedList<ActorRef>()
 
     companion object {
-        fun props(partialViewData: PartialViewSharedData): Props {
+        fun props(partialViewData: PVSharedData): Props {
             return Props.create(StatusActor::class.java) { StatusActor(partialViewData) }
         }
     }

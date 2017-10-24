@@ -32,7 +32,6 @@ class Membership(private val activeView: MutableSet<ActorRef> = mutableSetOf(),
     }
 
     fun discoverContactRefMessage(sender: ActorRef) {
-        //gvActor.tell(PartialDiscoveredNewNode(newGlobalActor), self)
         viewOperations.addNodeActiveView(sender)
     }
 
