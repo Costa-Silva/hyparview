@@ -20,9 +20,8 @@ fun main(args: Array<String>) {
         System.err.println("Check application.conf for MY_NODE")
         System.exit(-1)
     }
-    val myIdentifier = args[0]
-    val contactNodeIdentifier= args[1]
-
+    val contactNodeIdentifier= args[0]
+    val myIdentifier = args[1]
     // Initiate akka system
     val config = ConfigFactory.load()
     val system = ActorSystem.create(SYSTEM_NAME, config.getConfig(myIdentifier))
@@ -30,16 +29,17 @@ fun main(args: Array<String>) {
     val myNode = AkkaUtils.createNodeID(myIdentifier)
 
     if (contactNode != null && myNode != null) {
-        val gvWrapper = GVDependenciesWrapper(nodeId = myNode, imContact = myNode==contactNode)
+
+        val pvWrapper = PVDependenciesWrapper(contactNode = contactNode, myID = myNode)
+        val partialRef = system.actorOf(PartialViewActor.props(pvWrapper), myIdentifier)
+        val gvWrapper = GVDependenciesWrapper(nodeId = myNode, imContact = myNode==contactNode, partialActor = partialRef)
         val globalRef = system.actorOf(GlobalViewActor.props(gvWrapper), myIdentifier+ AkkaConstants.GLOBAL_ACTOR)
-        val pvWrapper = PVDependenciesWrapper(contactNode = contactNode, globalViewActor = globalRef, myID = myNode)
+        pvWrapper.globalActorRef = globalRef
 
         val gvSharedData = GVSharedData(gvWrapper.eventList, gvWrapper.pendingEvents, gvWrapper.toRemove, gvWrapper.globalView)
         val pvSharedData = PVSharedData(myIdentifier, contactNode, pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView, pvWrapper.mCounter)
 
         val statusActor = system.actorOf(StatusActor.props(pvSharedData), myIdentifier+ AkkaConstants.STATUS_ACTOR)
         SystemStatus(system, pvSharedData, gvSharedData, statusActor)
-
-        system.actorOf(PartialViewActor.props(pvWrapper), myIdentifier)
     }
 }

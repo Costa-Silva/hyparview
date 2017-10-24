@@ -1,6 +1,7 @@
 package partialview.protocols.membership
 
 import akka.actor.ActorRef
+import akka.actor.ActorSelection
 import akkanetwork.AkkaUtils
 import globalview.messages.internal.PartialDiscoveredNewNode
 import partialview.PVHelpers
@@ -15,13 +16,13 @@ class Membership(private val activeView: MutableSet<ActorRef> = mutableSetOf(),
                  private val viewOperations: ViewOperations,
                  private val self: ActorRef,
                  private val crashRecovery: CrashRecovery,
-                 private val gvActor: ActorRef,
+                 private val gvActor: ActorSelection,
                  private val mCounter: PVMessagesCounter) {
 
     fun join(sender: ActorRef, newGlobalActor: ActorRef) {
         mCounter.joinsReceived++
         sender.tell(DiscoverContactRefMessage(), self)
-        gvActor.tell(PartialDiscoveredNewNode(newGlobalActor), self)
+        gvActor.tell(PartialDiscoveredNewNode(newGlobalActor, sender), self)
         viewOperations.addNodeActiveView(sender)
         activeView.forEach {
             if (it != sender) {

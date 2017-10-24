@@ -2,9 +2,6 @@ package globalview
 
 import akka.actor.AbstractActor
 import akka.actor.Props
-import akkanetwork.AkkaConstants
-import akkanetwork.AkkaConstants.Companion.PARTIAL_ACTOR
-import akkanetwork.AkkaUtils
 import globalview.messages.external.ConflictMessage
 import globalview.messages.external.GiveGlobalMessage
 import globalview.messages.external.GlobalMessage
@@ -16,8 +13,7 @@ import partialview.protocols.gossip.messages.StatusMessageWrapper
 class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
 
     private val globalView = GlobalView(gvWrapper.eventList, gvWrapper.pendingEvents, gvWrapper.toRemove,
-            gvWrapper.globalView, self, AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME,
-            gvWrapper.nodeId, PARTIAL_ACTOR), gvWrapper.imContact)
+            gvWrapper.globalView, self, gvWrapper.partialActor , gvWrapper.imContact)
 
     companion object {
         fun props(gvWrapper: GVDependenciesWrapper): Props {
@@ -34,8 +30,8 @@ class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
 
                 // Internal messages
                 .match(StatusMessageWrapper::class.java) { globalView.partialDeliver(it) }
-                .match(MayBeDeadMessage::class.java) { globalView.globalMayBeDead(it.node) }
-                .match(PartialDiscoveredNewNode::class.java) { globalView.globalNewNode(it.newGlobalNode, true) }
+                .match(MayBeDeadMessage::class.java) { globalView.partialNodeMayBeDead(it.partialNode) }
+                .match(PartialDiscoveredNewNode::class.java) { globalView.globalNewNode(it.newGlobalNode, it.newPartialNode ,true) }
                 .build()
 
     }

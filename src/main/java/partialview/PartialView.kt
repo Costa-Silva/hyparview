@@ -1,6 +1,7 @@
 package partialview
 import akka.actor.ActorContext
 import akka.actor.ActorRef
+import akka.actor.ActorSelection
 import partialview.protocols.crashrecovery.CrashRecovery
 import partialview.protocols.crashrecovery.NeighborRequestResult
 import partialview.protocols.crashrecovery.Priority
@@ -13,14 +14,15 @@ import partialview.protocols.suffle.Shuffle
 import partialview.wrappers.PVDependenciesWrapper
 import java.util.*
 
-class PartialView(pvWrapper: PVDependenciesWrapper, context: ActorContext, self: ActorRef) {
+class PartialView(pvWrapper: PVDependenciesWrapper, context: ActorContext,
+                  self: ActorRef, globalActor: ActorSelection) {
 
     private val viewOperations = ViewOperations(pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView,self, context, pvWrapper.mCounter)
-    private val crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, self, viewOperations, pvWrapper.globalViewActor, pvWrapper.mCounter)
+    private val crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, self, viewOperations, globalActor, pvWrapper.mCounter)
     private val shuffle = Shuffle(pvWrapper.activeView, pvWrapper.passiveView, viewOperations, self, pvWrapper.mCounter)
-    private val membership = Membership(pvWrapper.activeView, viewOperations, self, crashRecovery, pvWrapper.globalViewActor, pvWrapper.mCounter)
+    private val membership = Membership(pvWrapper.activeView, viewOperations, self, crashRecovery, globalActor, pvWrapper.mCounter)
     private val entropy = Entropy(pvWrapper.activeView, crashRecovery)
-    private val gossip = Gossip(pvWrapper.activeView, self, pvWrapper.globalViewActor)
+    private val gossip = Gossip(pvWrapper.activeView, self, globalActor)
 
     fun joinReceived(sender: ActorRef, newGlobalActor: ActorRef) {
         membership.join(sender, newGlobalActor)

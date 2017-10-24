@@ -1,6 +1,7 @@
 package partialview.protocols.crashrecovery
 
 import akka.actor.ActorRef
+import akka.actor.ActorSelection
 import akkanetwork.AkkaUtils
 import globalview.messages.internal.MayBeDeadMessage
 import partialview.PVHelpers
@@ -13,7 +14,7 @@ class CrashRecovery(private val activeView: MutableSet<ActorRef>,
                     private val passiveActiveView: MutableSet<ActorRef>,
                     private val self: ActorRef,
                     private val viewOperations: ViewOperations,
-                    private val gvActor: ActorRef,
+                    private val gvActor: ActorSelection,
                     private val mCounter: PVMessagesCounter) {
 
     private val ongoingNeighborRequests = mutableSetOf<ActorRef>()
@@ -24,6 +25,7 @@ class CrashRecovery(private val activeView: MutableSet<ActorRef>,
             val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
             sendNeighborRequest(priority)
             // TODO
+
             gvActor.tell(MayBeDeadMessage(node),self)
         } else if(passiveActiveView.contains(node)) {
             viewOperations.removeFromPassiveActive(node)

@@ -4,7 +4,8 @@ import akka.actor.AbstractActor
 import akka.actor.Props
 import akka.actor.Terminated
 import akkanetwork.AkkaConstants
-import akkanetwork.AkkaConstants.Companion.PARTIAL_ACTOR
+import akkanetwork.AkkaConstants.Companion.GLOBAL_ACTOR
+import akkanetwork.AkkaConstants.Companion.SYSTEM_NAME
 import akkanetwork.AkkaUtils
 import partialview.protocols.crashrecovery.messages.NeighborRequestMessage
 import partialview.protocols.crashrecovery.messages.NeighborRequestReplyMessage
@@ -19,10 +20,11 @@ import partialview.protocols.membership.messages.JoinMessage
 import partialview.protocols.suffle.messages.ShuffleMessage
 import partialview.protocols.suffle.messages.ShuffleReplyMessage
 import partialview.wrappers.PVDependenciesWrapper
+import java.util.*
 
 class PartialViewActor(pvWrapper: PVDependenciesWrapper): AbstractActor() {
 
-    private val partialView: PartialView = PartialView(pvWrapper, context, self)
+    private val partialView: PartialView = PartialView(pvWrapper, context, self, AkkaUtils.lookUpRemote(context, SYSTEM_NAME, pvWrapper.myID, GLOBAL_ACTOR))
 
     companion object {
         fun props(pvWrapper: PVDependenciesWrapper): Props {
@@ -33,8 +35,17 @@ class PartialViewActor(pvWrapper: PVDependenciesWrapper): AbstractActor() {
     init {
         // Ignore when it's the contact node joining the system
         if(pvWrapper.contactNode != pvWrapper.myID) {
-            val contactRemote = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, pvWrapper.contactNode, PARTIAL_ACTOR)
-            contactRemote.tell(JoinMessage(pvWrapper.globalViewActor), self)
+            val contactGlobal = object : TimerTask() {
+                override fun run() {
+                    if (pvWrapper.globalActorRef != null) {
+                        val contactRemote = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, pvWrapper.contactNode, AkkaConstants.PARTIAL_ACTOR)
+                        pvWrapper.globalActorRef?.let { contactRemote.tell(JoinMessage(it), self)  }
+                    } else {
+                        System.err.println("Global was not ready yet")
+                    }
+                }
+            }
+            Timer().schedule(contactGlobal, 500)
         }
     }
 

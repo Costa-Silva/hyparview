@@ -1,7 +1,6 @@
 package globalview
 
 import akka.actor.ActorRef
-import akka.actor.ActorSelection
 import akka.pattern.Patterns
 import akkanetwork.AkkaUtils
 import globalview.GVHelpers.Companion.CHECK_IF_ALIVE_TIMEOUT_MS
@@ -24,9 +23,9 @@ import java.util.concurrent.TimeUnit
 class GlobalView(private val eventList: LinkedList<UUID>,
                  private val pendingEvents: MutableMap<UUID, Event>,
                  private val toRemove: MutableSet<ActorRef>,
-                 private val globalView: MutableSet<ActorRef>,
+                 private val globalView: MutableMap<ActorRef, ActorRef>,
                  private val self: ActorRef,
-                 private val pvActor: ActorSelection,
+                 private val pvActor: ActorRef,
                  imContact: Boolean) {
 
     var timerSendEvents = Timer()
@@ -41,7 +40,7 @@ class GlobalView(private val eventList: LinkedList<UUID>,
     init {
 
         if(imContact){
-            globalNewNode(self, false)
+            globalNewNode(self, pvActor,false)
         }
         val sendHash = object : TimerTask() {
             override fun run() {
@@ -61,18 +60,17 @@ class GlobalView(private val eventList: LinkedList<UUID>,
         pvActor.tell(StatusMessageWrapper(message, self), ActorRef.noSender())
     }
 
-    private fun globalAdd(newNode: ActorRef, needsGlobal: Boolean) {
-        println("adicionei: ${newNode}@@@@@@@@@@@@@@@@@@@@@@")
-        globalView.add(newNode)
+    private fun globalAdd(globalNewNode: ActorRef, partialNewNode: ActorRef, needsGlobal: Boolean) {
+        globalView.put(globalNewNode, partialNewNode)
         if (needsGlobal) {
-            sendGlobalMessage(newNode)
+            sendGlobalMessage(globalNewNode)
         }
     }
 
-    fun receivedGlobalMessage(newView: MutableSet<ActorRef>, eventIds: LinkedList<UUID>) {
+    fun receivedGlobalMessage(newView: MutableMap<ActorRef, ActorRef>, eventIds: LinkedList<UUID>) {
         globalView.clear()
         eventList.clear()
-        globalView.addAll(newView)
+        globalView.putAll(newView)
         eventList.addAll(eventIds)
     }
 
@@ -85,15 +83,15 @@ class GlobalView(private val eventList: LinkedList<UUID>,
         toRemove.remove(node)
     }
 
-    fun globalMayBeDead(node: ActorRef) {
+    fun globalMayBeDead(globalNode: ActorRef, partialNode: ActorRef) {
         val uuid = UUID.randomUUID()
-        addToEventList(uuid, Event(EventEnum.MAY_BE_DEAD, node))
-        toRemove.add(node)
+        addToEventList(uuid, Event(EventEnum.MAY_BE_DEAD, globalNode, partialNode))
+        toRemove.add(globalNode)
 
         val timer = Timer()
         val removeNode = object : TimerTask() {
             override fun run() {
-                remove(node)
+                remove(globalNode)
                 timersMayBeDead.remove(uuid)
             }
         }
@@ -101,17 +99,17 @@ class GlobalView(private val eventList: LinkedList<UUID>,
         timersMayBeDead.put(uuid, timer)
     }
 
-    fun globalNewNode(newNode: ActorRef, needsGlobal: Boolean) {
+    fun globalNewNode(globalNewNode: ActorRef, partialNewNode: ActorRef, needsGlobal: Boolean) {
         val uuid = UUID.randomUUID()
-        addToEventList(uuid, Event(EventEnum.NEW_NODE, newNode))
-        globalAdd(newNode, needsGlobal)
+        addToEventList(uuid, Event(EventEnum.NEW_NODE, globalNewNode, partialNewNode))
+        globalAdd(globalNewNode, partialNewNode , needsGlobal)
     }
 
     private fun addToEventList(eventId: UUID, event: Event) {
         if(pendingEvents.isEmpty()) {
             timerSendEvents = Timer()
             timerSendEvents.schedule(sendEventsTask, SEND_EVENTS_PERIOD_MS)
-        } else if(event.node == self && event.event == EventEnum.MAY_BE_DEAD) {
+        } else if(event.globalNode == self && event.event == EventEnum.MAY_BE_DEAD) {
             timerSendEvents.cancel()
             timerSendEvents.schedule(sendEventsTask, SEND_EVENTS_PERIOD_MS)
         }
@@ -129,7 +127,7 @@ class GlobalView(private val eventList: LinkedList<UUID>,
     }
 
     private fun imAlive() {
-        addToEventList(UUID.randomUUID(), Event(EventEnum.STILL_ALIVE, self))
+        addToEventList(UUID.randomUUID(), Event(EventEnum.STILL_ALIVE, self, pvActor))
     }
 
     fun partialDeliver(message: StatusMessageWrapper) {
@@ -151,7 +149,7 @@ class GlobalView(private val eventList: LinkedList<UUID>,
         newEvents.forEach {
             val removeNodeTask = object : TimerTask() {
                 override fun run() {
-                    remove(it.value.node)
+                    remove(it.value.globalNode)
                     timersMayBeDead.remove(it.key)
                 }
             }
@@ -159,12 +157,13 @@ class GlobalView(private val eventList: LinkedList<UUID>,
             if(!gottaGoFastSet.contains(it.key)) {
                 addToEventList(it.key, it.value)
                 val type = it.value.event
-                val node = it.value.node
+                val globalNode = it.value.globalNode
+                val partialNode = it.value.partialNode
                 if (type == EventEnum.NEW_NODE) {
-                    globalAdd(node, false)
+                    globalAdd(globalNode, partialNode,false)
                 } else if (type == EventEnum.MAY_BE_DEAD) {
-                    if(node != self) {
-                        toRemove.add(node)
+                    if(globalNode != self) {
+                        toRemove.add(globalNode)
                         val timer = Timer()
                         timer.schedule(removeNodeTask, MAY_BE_DEAD_PERIOD_MS)
                         timersMayBeDead.put(it.key, timer)
@@ -172,11 +171,11 @@ class GlobalView(private val eventList: LinkedList<UUID>,
                       imAlive()
                     }
                 } else if (type == EventEnum.STILL_ALIVE) {
-                    if(toRemove.contains(node)) {
-                        toRemove.remove(node)
+                    if(toRemove.contains(globalNode)) {
+                        toRemove.remove(globalNode)
                         timersMayBeDead.remove(it.key)?.cancel()
                     } else {
-                        globalAdd(it.value.node, false)
+                        globalAdd(it.value.globalNode, partialNode, false)
                     }
                 }
 
@@ -204,36 +203,40 @@ class GlobalView(private val eventList: LinkedList<UUID>,
         sender.tell(ConflictMessage(globalView), self)
     }
 
-    // TODO: TEST THIS ASK
-    fun conflictMessageReceived(otherGlobalView: MutableSet<ActorRef>) {
+    fun conflictMessageReceived(otherGlobalView: MutableMap<ActorRef, ActorRef>) {
         otherGlobalView
-                .filter { !globalView.contains(it) }
-                .forEach { node ->
+                .filter { !globalView.containsKey(it.key) }
+                .forEach { entry ->
                     var isAlive = false
                     try {
-                        val future = Patterns.ask(node, PingMessage(), CHECK_IF_ALIVE_TIMEOUT_MS)
+                        val future = Patterns.ask(entry.key, PingMessage(), CHECK_IF_ALIVE_TIMEOUT_MS)
                         isAlive = Await.result(future, FiniteDuration(CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) as Boolean
                     } catch (e: Exception) { }
                     if(isAlive) {
-                        globalNewNode(node, false)
+                        globalNewNode(entry.key, entry.value, false)
                     } else {
-                        addToEventList(UUID.randomUUID(), Event(EventEnum.MAY_BE_DEAD, node))
+                        addToEventList(UUID.randomUUID(), Event(EventEnum.MAY_BE_DEAD, entry.key, entry.value))
                     }
                 }
         globalView
-                .filter { !otherGlobalView.contains(it) }
-                .forEach { node ->
+                .filter { !otherGlobalView.containsKey(it.key) }
+                .forEach { entry ->
                     var isAlive = false
                     try {
-                        val future = Patterns.ask(node, PingMessage(), CHECK_IF_ALIVE_TIMEOUT_MS)
+                        val future = Patterns.ask(entry.key, PingMessage(), CHECK_IF_ALIVE_TIMEOUT_MS)
                         isAlive = Await.result(future, FiniteDuration(CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) as Boolean
                     } catch (e: Exception) { }
                     if(isAlive) {
-                        addToEventList(UUID.randomUUID() ,Event(EventEnum.STILL_ALIVE, node))
+                        addToEventList(UUID.randomUUID() ,Event(EventEnum.STILL_ALIVE, entry.key, entry.value))
                     } else {
-                        globalMayBeDead(node)
+                        globalMayBeDead(entry.key, entry.value)
                     }
                 }
+    }
+
+    fun partialNodeMayBeDead(partialNode: ActorRef) {
+        val globalNode = globalView.filterValues { it == partialNode }.entries.first().key
+        globalMayBeDead(globalNode, partialNode)
     }
 
 }
