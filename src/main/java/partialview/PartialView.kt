@@ -22,8 +22,8 @@ class PartialView(pvWrapper: PVDependenciesWrapper, context: ActorContext, self:
     private val entropy = Entropy(pvWrapper.activeView, crashRecovery)
     private val gossip = Gossip(pvWrapper.activeView, self, pvWrapper.globalViewActor)
 
-    fun joinReceived(sender: ActorRef) {
-        membership.join(sender)
+    fun joinReceived(sender: ActorRef, newGlobalActor: ActorRef) {
+        membership.join(sender, newGlobalActor)
     }
 
     fun discoverContactRefMessageReceived(sender: ActorRef) {

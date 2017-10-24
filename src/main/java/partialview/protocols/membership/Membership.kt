@@ -18,10 +18,10 @@ class Membership(private val activeView: MutableSet<ActorRef> = mutableSetOf(),
                  private val gvActor: ActorRef,
                  private val mCounter: PVMessagesCounter) {
 
-    fun join(sender: ActorRef) {
+    fun join(sender: ActorRef, newGlobalActor: ActorRef) {
         mCounter.joinsReceived++
         sender.tell(DiscoverContactRefMessage(), self)
-        gvActor.tell(PartialDiscoveredNewNode(sender), self)
+        gvActor.tell(PartialDiscoveredNewNode(newGlobalActor), self)
         viewOperations.addNodeActiveView(sender)
         activeView.forEach {
             if (it != sender) {
@@ -32,6 +32,7 @@ class Membership(private val activeView: MutableSet<ActorRef> = mutableSetOf(),
     }
 
     fun discoverContactRefMessage(sender: ActorRef) {
+        //gvActor.tell(PartialDiscoveredNewNode(newGlobalActor), self)
         viewOperations.addNodeActiveView(sender)
     }
 

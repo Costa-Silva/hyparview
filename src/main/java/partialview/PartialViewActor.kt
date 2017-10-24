@@ -34,14 +34,14 @@ class PartialViewActor(pvWrapper: PVDependenciesWrapper): AbstractActor() {
         // Ignore when it's the contact node joining the system
         pvWrapper.contactNode?.let {
             val contactRemote = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, it, PARTIAL_ACTOR)
-            contactRemote.tell(JoinMessage(), self)
+            contactRemote.tell(JoinMessage(pvWrapper.globalViewActor), self)
         }
     }
 
     override fun createReceive(): Receive {
         return receiveBuilder()
                 .match(Terminated::class.java) { partialView.crashed(it.actor) }
-                .match(JoinMessage::class.java) { partialView.joinReceived(sender) }
+                .match(JoinMessage::class.java) { partialView.joinReceived(sender, it.newGlobalActor) }
                 .match(DiscoverContactRefMessage::class.java) { partialView.discoverContactRefMessageReceived(sender) }
                 .match(ForwardJoinMessage::class.java) { partialView.forwardJoinReceived(it.timeToLive, it.newNode, sender) }
                 .match(DisconnectMessage::class.java) { partialView.disconnectReceived(sender) }

@@ -38,8 +38,6 @@ class GlobalView(private val eventList: LinkedList<UUID>,
     }
 
     init {
-        // TODO: Test if this is needed
-        Thread.sleep(1000)
         val sendHash = object : TimerTask() {
             override fun run() {
                 timerSendEvents.cancel()
