@@ -1,7 +1,6 @@
 
 import akka.actor.ActorSystem
-import akkanetwork.AkkaConstants.Companion.GLOBAL_ACTOR
-import akkanetwork.AkkaConstants.Companion.STATUS_ACTOR
+import akkanetwork.AkkaConstants
 import akkanetwork.AkkaConstants.Companion.SYSTEM_NAME
 import akkanetwork.AkkaUtils
 import com.typesafe.config.ConfigFactory
@@ -27,19 +26,20 @@ fun main(args: Array<String>) {
     // Initiate akka system
     val config = ConfigFactory.load()
     val system = ActorSystem.create(SYSTEM_NAME, config.getConfig(myIdentifier))
-    var contactNode = AkkaUtils.createNodeID(contactNodeIdentifier)
+    val contactNode = AkkaUtils.createNodeID(contactNodeIdentifier)
+    val myNode = AkkaUtils.createNodeID(myIdentifier)
 
-    AkkaUtils.createNodeID(myIdentifier)?.let {
-        val gvWrapper = GVDependenciesWrapper(nodeId = it, imContact = it==contactNode)
-        val globalRef = system.actorOf(GlobalViewActor.props(gvWrapper), myIdentifier+GLOBAL_ACTOR)
-        val pvWrapper = PVDependenciesWrapper(contactNode = contactNode, globalViewActor = globalRef, myID = it)
-
-        val partialRef = system.actorOf(PartialViewActor.props(pvWrapper), myIdentifier)
+    if (contactNode != null && myNode != null) {
+        val gvWrapper = GVDependenciesWrapper(nodeId = myNode, imContact = myNode==contactNode)
+        val globalRef = system.actorOf(GlobalViewActor.props(gvWrapper), myIdentifier+ AkkaConstants.GLOBAL_ACTOR)
+        val pvWrapper = PVDependenciesWrapper(contactNode = contactNode, globalViewActor = globalRef, myID = myNode)
 
         val gvSharedData = GVSharedData(gvWrapper.eventList, gvWrapper.pendingEvents, gvWrapper.toRemove, gvWrapper.globalView)
         val pvSharedData = PVSharedData(myIdentifier, contactNode, pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView, pvWrapper.mCounter)
 
-        val statusActor = system.actorOf(StatusActor.props(pvSharedData), myIdentifier+STATUS_ACTOR)
+        val statusActor = system.actorOf(StatusActor.props(pvSharedData), myIdentifier+ AkkaConstants.STATUS_ACTOR)
         SystemStatus(system, pvSharedData, gvSharedData, statusActor)
+
+        system.actorOf(PartialViewActor.props(pvWrapper), myIdentifier)
     }
 }

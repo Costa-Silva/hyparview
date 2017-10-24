@@ -44,7 +44,7 @@ class SystemStatus(system: ActorSystem, pvData: PVSharedData, gvData: GVSharedDa
                 "5.1" -> WriteStatus.writeToFile(pvData, statusActor)
                 else -> {println("Unknown command. Usage: 1.1")}
             }
-            Thread.sleep(2000)
+            //Thread.sleep(2000)
         }
     }
 

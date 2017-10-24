@@ -5,7 +5,7 @@ import akkanetwork.NodeID
 import partialview.PVMessagesCounter
 
 
-class PVDependenciesWrapper(val contactNode: NodeID?,
+class PVDependenciesWrapper(val contactNode: NodeID,
                             val myID: NodeID,
                             val activeView: MutableSet<ActorRef> = mutableSetOf(),
                             val passiveView: MutableSet<ActorRef> = mutableSetOf(),
