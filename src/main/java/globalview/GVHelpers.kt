@@ -18,7 +18,7 @@ class GVHelpers {
             return pendingEvents.size>= PENDING_EVENTS_SIZE
         }
 
-        fun eventListisFull(eventList: LinkedList<UUID>): Boolean {
+        fun eventListisFull(eventList: LinkedList<Pair<UUID, Event>>): Boolean {
             return eventList.size>= EVENT_LIST_SIZE
         }
     }

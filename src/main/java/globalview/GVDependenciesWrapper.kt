@@ -4,7 +4,7 @@ import akka.actor.ActorRef
 import akkanetwork.NodeID
 import java.util.*
 
-class GVDependenciesWrapper(val eventList: LinkedList<UUID> = LinkedList(),
+class GVDependenciesWrapper(val eventList: LinkedList<Pair<UUID, Event>> = LinkedList(),
                             val pendingEvents: MutableMap<UUID, Event> = mutableMapOf(),
                             val toRemove: MutableSet<ActorRef> = mutableSetOf(),
                             val globalView: MutableMap<ActorRef, ActorRef> = mutableMapOf(),

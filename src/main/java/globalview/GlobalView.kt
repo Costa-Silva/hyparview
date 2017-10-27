@@ -20,7 +20,7 @@ import scala.concurrent.duration.FiniteDuration
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class GlobalView(private val eventList: LinkedList<UUID>,
+class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                  private val pendingEvents: MutableMap<UUID, Event>,
                  private val toRemove: MutableSet<ActorRef>,
                  private val globalView: MutableMap<ActorRef, ActorRef>,
@@ -67,7 +67,7 @@ class GlobalView(private val eventList: LinkedList<UUID>,
         }
     }
 
-    fun receivedGlobalMessage(newView: MutableMap<ActorRef, ActorRef>, eventIds: LinkedList<UUID>) {
+    fun receivedGlobalMessage(newView: MutableMap<ActorRef, ActorRef>, eventIds: LinkedList<Pair<UUID, Event>>) {
         globalView.clear()
         eventList.clear()
         globalView.putAll(newView)
@@ -117,7 +117,7 @@ class GlobalView(private val eventList: LinkedList<UUID>,
         if (eventListisFull(eventList)) {
             eventList.removeFirst()
         }
-        eventList.add(eventId)
+        eventList.add(Pair(eventId, event))
         pendingEvents.put(eventId, event)
 
         if(pendingEventsisFull(pendingEvents)) {
@@ -143,7 +143,7 @@ class GlobalView(private val eventList: LinkedList<UUID>,
         }
 
         val gottaGoFastSet = mutableSetOf<UUID>()
-        gottaGoFastSet.addAll(eventList)
+        gottaGoFastSet.addAll(eventList.map { it.first })
 
 
         newEvents.forEach {

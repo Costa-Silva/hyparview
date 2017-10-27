@@ -36,7 +36,7 @@ class SystemStatus(system: ActorSystem, pvData: PVSharedData, gvData: GVSharedDa
                 "1.8" -> printlnErr("Sent: ${pvData.mCounter.shufflesSent} Received: ${pvData.mCounter.shufflesReceived}")
                 "1.9" -> printlnErr("Sent: ${pvData.mCounter.disconnectsSent} Received: ${pvData.mCounter.disconnectsReceived}")
                 "2.1" -> printlnErr("Global view: ${gvData.globalView.map { it.key.path().name()}}")
-                "2.2" -> printlnErr("Event list: ${gvData.eventList.map { gvData.pendingEvents[it] }}")
+                "2.2" -> printlnErr("Event list: ${gvData.eventList.map { it.second }}")
                 "2.3" -> printlnErr("Pending events: ${gvData.pendingEvents.values}")
                 "2.4" -> printlnErr("Nodes that might be dead: ${gvData.toRemove.map { it.path().name()}}")
                 "4.1" -> entropyOptions.cutTheWireOption()
