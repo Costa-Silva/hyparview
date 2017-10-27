@@ -23,6 +23,7 @@ class CrashRecovery(private val activeView: MutableSet<ActorRef>,
         if(activeView.contains(node)) {
             viewOperations.nodeFailedSoRemoveFromActive(node)
             val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
+            System.err.println("o $node morreu")
             sendNeighborRequest(priority)
             gvActor.tell(MayBeDeadMessage(node),self)
         } else if(passiveActiveView.contains(node)) {

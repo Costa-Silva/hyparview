@@ -20,7 +20,7 @@ class SystemStatus(system: ActorSystem, pvData: PVSharedData, gvData: GVSharedDa
 
     init {
         while (true) {
-            printOptions()
+            //printOptions()
             val option = readLine()
             when(option) {
                 "0.1" -> printlnErr(PVHelpers.ACTIVE_VIEW_MAX_SIZE)
@@ -39,6 +39,8 @@ class SystemStatus(system: ActorSystem, pvData: PVSharedData, gvData: GVSharedDa
                 "2.2" -> printlnErr("Event list: ${gvData.eventList.map { it.second }}")
                 "2.3" -> printlnErr("Pending events: ${gvData.pendingEvents.values}")
                 "2.4" -> printlnErr("Nodes that might be dead: ${gvData.toRemove.map { it.path().name()}}")
+                "2.5" -> printlnErr("Messages sent to check if alive: ${gvData.gVMCounter.messagesToCheckIfAlive}")
+                "2.6" -> printlnErr("Messages sent to resolve conflicts: ${gvData.gVMCounter.messagesToResolveConflict}")
                 "4.1" -> entropyOptions.cutTheWireOption()
                 "4.2" -> entropyOptions.killOption()
                 "5.1" -> WriteStatus.writeToFile(pvData, statusActor)
@@ -70,6 +72,8 @@ class SystemStatus(system: ActorSystem, pvData: PVSharedData, gvData: GVSharedDa
         println("2)Event list -> 2.2")
         println("3)Pending events -> 2.3")
         println("4)Nodes that might be dead -> 2.4")
+        println("5)Messages sent to check if alive -> 2.5")
+        println("6)Messages sent to resolve conflicts -> 2.6")
 
         println("\nEntropy commands.")
         println("1)Cut the wire between 2 nodes: 4.1")

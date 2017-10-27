@@ -15,7 +15,8 @@ import partialview.protocols.gossip.messages.StatusMessageWrapper
 class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
 
     private val globalView = GlobalView(gvWrapper.eventList, gvWrapper.pendingEvents, gvWrapper.toRemove,
-            gvWrapper.globalView, self, gvWrapper.partialActor , gvWrapper.system, gvWrapper.imContact)
+            gvWrapper.globalView, self, gvWrapper.partialActor , gvWrapper.system, gvWrapper.gVMCounter,
+            gvWrapper.imContact)
 
     companion object {
         fun props(gvWrapper: GVDependenciesWrapper): Props {

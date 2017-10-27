@@ -39,6 +39,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                  private val self: ActorRef,
                  private val pvActor: ActorRef,
                  private val system: ActorSystem,
+                 private val gVMCounter: GVMessagesCounter,
                  imContact: Boolean) {
 
     val timersMayBeDead = mutableMapOf<UUID, Timer>()
@@ -219,6 +220,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
             val myNumber = AkkaUtils.numberFromIdentifier(self.path().name())
             val enemyNumber = AkkaUtils.numberFromIdentifier(sender.path().name())
             if (enemyNumber>myNumber) {
+                gVMCounter.messagesToResolveConflict++
                 sender.tell(ConflictMessage(globalView), self)
             } else {
                 sender.tell(GiveGlobalMessage(), self)
@@ -227,18 +229,26 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     }
 
     fun giveGlobalReceived(sender: ActorRef) {
+        gVMCounter.messagesToResolveConflict++
         sender.tell(ConflictMessage(globalView), self)
     }
 
     fun conflictMessageReceived(otherGlobalView: MutableMap<ActorRef, ActorRef>) {
         otherGlobalView
-                .filter { !globalView.containsKey(it.key) }
+                .filter { !globalView.containsKey(it.key)}
                 .forEach { entry ->
                     var isAlive = false
-                    try {
-                        val future = Patterns.ask(entry.key, PingMessage(), CHECK_IF_ALIVE_TIMEOUT_MS)
-                        isAlive = Await.result(future, FiniteDuration(CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) as Boolean
-                    } catch (e: Exception) { }
+                    if (entry.key != self) {
+                        try {
+                            gVMCounter.messagesToCheckIfAlive++
+                            val future = Patterns.ask(entry.key, PingMessage(), CHECK_IF_ALIVE_TIMEOUT_MS)
+                            isAlive = Await.result(future, FiniteDuration(CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) as Boolean
+                        } catch (e: Exception) {
+                            System.err.println("dead as fuck ${entry.key}")
+                        }
+                    } else {
+                        isAlive = true
+                    }
                     if(isAlive) {
                         globalNewNode(entry.key, entry.value, false)
                     } else {
@@ -246,13 +256,20 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                     }
                 }
         globalView
-                .filter { !otherGlobalView.containsKey(it.key) }
+                .filter { !otherGlobalView.containsKey(it.key)}
                 .forEach { entry ->
                     var isAlive = false
-                    try {
-                        val future = Patterns.ask(entry.key, PingMessage(), CHECK_IF_ALIVE_TIMEOUT_MS)
-                        isAlive = Await.result(future, FiniteDuration(CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) as Boolean
-                    } catch (e: Exception) { }
+                    if(entry.key != self) {
+                        try {
+                            gVMCounter.messagesToCheckIfAlive++
+                            val future = Patterns.ask(entry.key, PingMessage(), CHECK_IF_ALIVE_TIMEOUT_MS)
+                            isAlive = Await.result(future, FiniteDuration(CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) as Boolean
+                        } catch (e: Exception) {
+                            System.err.println("dead as fuck ${entry.key}")
+                        }
+                    }else {
+                        isAlive = true
+                    }
                     if(isAlive) {
                         addToEventList(UUID.randomUUID() ,Event(EventEnum.STILL_ALIVE, entry.key, entry.value))
                     } else {
