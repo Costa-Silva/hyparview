@@ -57,7 +57,8 @@ class Membership(private val activeView: MutableSet<ActorRef> = mutableSetOf(),
         mCounter.disconnectsReceived++
         if (activeView.contains(sender)){
             viewOperations.activeToPassive(sender)
-            if(activeView.size == 0) { crashRecovery.sendNeighborRequest(Priority.HIGH) }
+            val priority = if (activeView.size == 0) Priority.HIGH else Priority.LOW
+            crashRecovery.sendNeighborRequest(priority)
         }
     }
 }

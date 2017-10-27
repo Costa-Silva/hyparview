@@ -4,11 +4,13 @@ import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akkanetwork.NodeID
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 
 class GVDependenciesWrapper(val eventList: LinkedList<Pair<UUID, Event>> = LinkedList(),
-                            val pendingEvents: MutableMap<UUID, Event> = mutableMapOf(),
+                            val pendingEvents: ConcurrentMap<UUID, Event> = ConcurrentHashMap<UUID, Event>(),
                             val toRemove: MutableSet<ActorRef> = mutableSetOf(),
-                            val globalView: MutableMap<ActorRef, ActorRef> = mutableMapOf(),
+                            val globalView: ConcurrentMap<ActorRef, ActorRef> = ConcurrentHashMap<ActorRef, ActorRef>(),
                             val nodeId: NodeID,
                             val imContact: Boolean,
                             val partialActor: ActorRef,

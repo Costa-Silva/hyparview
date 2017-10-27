@@ -23,6 +23,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.concurrent.duration.FiniteDuration
 import java.util.*
+import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.TimeUnit
 
 
@@ -34,7 +35,7 @@ import java.util.concurrent.TimeUnit
 class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                  private val pendingEvents: MutableMap<UUID, Event>,
                  private val toRemove: MutableSet<ActorRef>,
-                 private val globalView: MutableMap<ActorRef, ActorRef>,
+                 private val globalView: ConcurrentMap<ActorRef, ActorRef>,
                  private val self: ActorRef,
                  private val pvActor: ActorRef,
                  private val system: ActorSystem,
@@ -71,7 +72,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     }
 
     fun globalBroadcast() {
-        val message = StatusMessage(globalView.toMutableMap().hashCode(), pendingEvents, toRemove.isEmpty())
+        val message = StatusMessage(globalView.hashCode(), pendingEvents, toRemove.isEmpty())
         pvActor.tell(StatusMessageWrapper(message, self), ActorRef.noSender())
     }
 
