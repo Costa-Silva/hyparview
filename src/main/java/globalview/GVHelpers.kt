@@ -14,6 +14,9 @@ class GVHelpers {
         const val EVENT_LIST_SIZE = 10
         const val CHECK_IF_ALIVE_TIMEOUT_MS: Long = 500
 
+        const val SEND_EVENTS_MESSAGE = "SendEvents"
+
+
         fun pendingEventsisFull(pendingEvents: MutableMap<UUID, Event>): Boolean {
             return pendingEvents.size>= PENDING_EVENTS_SIZE
         }

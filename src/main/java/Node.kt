@@ -32,7 +32,7 @@ fun main(args: Array<String>) {
 
         val pvWrapper = PVDependenciesWrapper(contactNode = contactNode, myID = myNode)
         val partialRef = system.actorOf(PartialViewActor.props(pvWrapper), myIdentifier)
-        val gvWrapper = GVDependenciesWrapper(nodeId = myNode, imContact = myNode==contactNode, partialActor = partialRef)
+        val gvWrapper = GVDependenciesWrapper(nodeId = myNode, imContact = myNode==contactNode, partialActor = partialRef, system= system)
         val globalRef = system.actorOf(GlobalViewActor.props(gvWrapper), myIdentifier+ AkkaConstants.GLOBAL_ACTOR)
         pvWrapper.globalActorRef = globalRef
 

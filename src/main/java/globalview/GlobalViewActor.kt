@@ -2,6 +2,7 @@ package globalview
 
 import akka.actor.AbstractActor
 import akka.actor.Props
+import globalview.GVHelpers.Companion.SEND_EVENTS_MESSAGE
 import globalview.messages.external.ConflictMessage
 import globalview.messages.external.GiveGlobalMessage
 import globalview.messages.external.GlobalMessage
@@ -13,7 +14,7 @@ import partialview.protocols.gossip.messages.StatusMessageWrapper
 class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
 
     private val globalView = GlobalView(gvWrapper.eventList, gvWrapper.pendingEvents, gvWrapper.toRemove,
-            gvWrapper.globalView, self, gvWrapper.partialActor , gvWrapper.imContact)
+            gvWrapper.globalView, self, gvWrapper.partialActor , gvWrapper.system, gvWrapper.imContact)
 
     companion object {
         fun props(gvWrapper: GVDependenciesWrapper): Props {
@@ -32,6 +33,13 @@ class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
                 .match(StatusMessageWrapper::class.java) { globalView.partialDeliver(it) }
                 .match(MayBeDeadMessage::class.java) { globalView.partialNodeMayBeDead(it.partialNode) }
                 .match(PartialDiscoveredNewNode::class.java) { globalView.globalNewNode(it.newGlobalNode, it.newPartialNode ,true) }
+
+                // From myself
+                .match(String::class.java) {
+                    if(it==SEND_EVENTS_MESSAGE) {
+                        globalView.sendEvents()
+                    }
+                }
                 .build()
 
     }

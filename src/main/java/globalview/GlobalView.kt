@@ -1,10 +1,13 @@
 package globalview
 
 import akka.actor.ActorRef
+import akka.actor.ActorSystem
+import akka.actor.Cancellable
 import akka.pattern.Patterns
 import akkanetwork.AkkaUtils
 import globalview.GVHelpers.Companion.CHECK_IF_ALIVE_TIMEOUT_MS
 import globalview.GVHelpers.Companion.MAY_BE_DEAD_PERIOD_MS
+import globalview.GVHelpers.Companion.SEND_EVENTS_MESSAGE
 import globalview.GVHelpers.Companion.SEND_EVENTS_PERIOD_MS
 import globalview.GVHelpers.Companion.SEND_HASH_PERIOD_MS
 import globalview.GVHelpers.Companion.eventListisFull
@@ -16,9 +19,16 @@ import globalview.messages.external.PingMessage
 import globalview.messages.internal.StatusMessage
 import partialview.protocols.gossip.messages.StatusMessageWrapper
 import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 import scala.concurrent.duration.FiniteDuration
 import java.util.*
 import java.util.concurrent.TimeUnit
+
+
+
+
+
+
 
 class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                  private val pendingEvents: MutableMap<UUID, Event>,
@@ -26,25 +36,29 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                  private val globalView: MutableMap<ActorRef, ActorRef>,
                  private val self: ActorRef,
                  private val pvActor: ActorRef,
+                 private val system: ActorSystem,
                  imContact: Boolean) {
 
-    var timerSendEvents = Timer()
     val timersMayBeDead = mutableMapOf<UUID, Timer>()
+    var sendEventsTimer: Cancellable? = null
 
-    private val sendEventsTask = object : TimerTask() {
-        override fun run() {
-            sendEvents()
-        }
+
+    private fun sendEventsTimerSchedule(): Cancellable? {
+
+        return system.scheduler().scheduleOnce(Duration.create(SEND_EVENTS_PERIOD_MS, TimeUnit.MILLISECONDS),
+                Runnable {
+                    println("vou mandar mensagem")
+                    self.tell(SEND_EVENTS_MESSAGE, ActorRef.noSender())
+                }, system.dispatcher())
     }
 
     init {
-
         if(imContact){
             globalNewNode(self, pvActor,false)
         }
         val sendHash = object : TimerTask() {
             override fun run() {
-                timerSendEvents.cancel()
+                cancelTimerSendEvent()
                 globalBroadcast()
             }
         }
@@ -52,6 +66,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     }
 
     fun sendEvents() {
+        println("recebi o send events")
         globalBroadcast()
     }
 
@@ -105,13 +120,26 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
         globalAdd(globalNewNode, partialNewNode , needsGlobal)
     }
 
+    private fun cancelTimerSendEvent() {
+        sendEventsTimer?.let{
+            if (!it.isCancelled) {
+                println("vou cancelar")
+                it.cancel()
+            }
+        }
+    }
+
+    private fun reScheduleTimerEvent() {
+        cancelTimerSendEvent()
+        println("vou fazer reschedule")
+        sendEventsTimer = sendEventsTimerSchedule()
+    }
+
     private fun addToEventList(eventId: UUID, event: Event) {
         if(pendingEvents.isEmpty()) {
-            timerSendEvents = Timer()
-            timerSendEvents.schedule(sendEventsTask, SEND_EVENTS_PERIOD_MS)
+            reScheduleTimerEvent()
         } else if(event.globalNode == self && event.event == EventEnum.MAY_BE_DEAD) {
-            timerSendEvents.cancel()
-            timerSendEvents.schedule(sendEventsTask, SEND_EVENTS_PERIOD_MS)
+            reScheduleTimerEvent()
         }
 
         if (eventListisFull(eventList)) {
@@ -121,7 +149,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
         pendingEvents.put(eventId, event)
 
         if(pendingEventsisFull(pendingEvents)) {
-            timerSendEvents.cancel()
+            cancelTimerSendEvent()
             globalBroadcast()
         }
     }
@@ -168,7 +196,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                         timer.schedule(removeNodeTask, MAY_BE_DEAD_PERIOD_MS)
                         timersMayBeDead.put(it.key, timer)
                     } else {
-                      imAlive()
+                        imAlive()
                     }
                 } else if (type == EventEnum.STILL_ALIVE) {
                     if(toRemove.contains(globalNode)) {
