@@ -9,6 +9,7 @@ import globalview.GVHelpers.Companion.CHECK_IF_ALIVE_TIMEOUT_MS
 import globalview.GVHelpers.Companion.MAY_BE_DEAD_PERIOD_MS
 import globalview.GVHelpers.Companion.SEND_EVENTS_MESSAGE
 import globalview.GVHelpers.Companion.SEND_EVENTS_PERIOD_MS
+import globalview.GVHelpers.Companion.SEND_HASH_MESSAGE
 import globalview.GVHelpers.Companion.SEND_HASH_PERIOD_MS
 import globalview.GVHelpers.Companion.eventListisFull
 import globalview.GVHelpers.Companion.pendingEventsisFull
@@ -42,36 +43,35 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     val timersMayBeDead = mutableMapOf<UUID, Timer>()
     var sendEventsTimer: Cancellable? = null
 
+    val hashTimer = system.scheduler().schedule(Duration.Zero(),
+            Duration.create(SEND_HASH_PERIOD_MS, TimeUnit.MILLISECONDS), self, SEND_HASH_MESSAGE,
+            system.dispatcher(), ActorRef.noSender())
 
     private fun sendEventsTimerSchedule(): Cancellable? {
-
         return system.scheduler().scheduleOnce(Duration.create(SEND_EVENTS_PERIOD_MS, TimeUnit.MILLISECONDS),
                 Runnable {
-                    println("vou mandar mensagem")
                     self.tell(SEND_EVENTS_MESSAGE, ActorRef.noSender())
                 }, system.dispatcher())
+    }
+
+
+    fun sendHash() {
+        cancelTimerSendEvent()
+        globalBroadcast()
     }
 
     init {
         if(imContact){
             globalNewNode(self, pvActor,false)
         }
-        val sendHash = object : TimerTask() {
-            override fun run() {
-                cancelTimerSendEvent()
-                globalBroadcast()
-            }
-        }
-        Timer().scheduleAtFixedRate(sendHash ,0, SEND_HASH_PERIOD_MS)
     }
 
     fun sendEvents() {
-        println("recebi o send events")
         globalBroadcast()
     }
 
     fun globalBroadcast() {
-        val message = StatusMessage(globalView.hashCode(), pendingEvents, toRemove.isEmpty())
+        val message = StatusMessage(globalView.toMutableMap().hashCode(), pendingEvents, toRemove.isEmpty())
         pvActor.tell(StatusMessageWrapper(message, self), ActorRef.noSender())
     }
 
@@ -123,7 +123,6 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     private fun cancelTimerSendEvent() {
         sendEventsTimer?.let{
             if (!it.isCancelled) {
-                println("vou cancelar")
                 it.cancel()
             }
         }
@@ -131,7 +130,6 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
 
     private fun reScheduleTimerEvent() {
         cancelTimerSendEvent()
-        println("vou fazer reschedule")
         sendEventsTimer = sendEventsTimerSchedule()
     }
 

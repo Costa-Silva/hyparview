@@ -3,6 +3,7 @@ package globalview
 import akka.actor.AbstractActor
 import akka.actor.Props
 import globalview.GVHelpers.Companion.SEND_EVENTS_MESSAGE
+import globalview.GVHelpers.Companion.SEND_HASH_MESSAGE
 import globalview.messages.external.ConflictMessage
 import globalview.messages.external.GiveGlobalMessage
 import globalview.messages.external.GlobalMessage
@@ -36,8 +37,9 @@ class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
 
                 // From myself
                 .match(String::class.java) {
-                    if(it==SEND_EVENTS_MESSAGE) {
-                        globalView.sendEvents()
+                    when(it) {
+                        SEND_HASH_MESSAGE -> globalView.sendHash()
+                        SEND_EVENTS_MESSAGE -> globalView.sendEvents()
                     }
                 }
                 .build()

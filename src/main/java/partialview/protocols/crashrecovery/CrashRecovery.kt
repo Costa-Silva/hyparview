@@ -24,8 +24,6 @@ class CrashRecovery(private val activeView: MutableSet<ActorRef>,
             viewOperations.nodeFailedSoRemoveFromActive(node)
             val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
             sendNeighborRequest(priority)
-            // TODO
-
             gvActor.tell(MayBeDeadMessage(node),self)
         } else if(passiveActiveView.contains(node)) {
             viewOperations.removeFromPassiveActive(node)
@@ -56,6 +54,8 @@ class CrashRecovery(private val activeView: MutableSet<ActorRef>,
             viewOperations.passiveToActive(sender)
         } else {
             val actor = AkkaUtils.chooseRandomWithout(ongoingNeighborRequests, passiveActiveView)
+            // TODO
+
             actor?.let {
                 val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
                 mCounter.neighborRequestsSent++
