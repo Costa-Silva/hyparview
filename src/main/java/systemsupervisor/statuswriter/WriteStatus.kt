@@ -13,6 +13,7 @@ import systemsupervisor.graph.NodeStateMessage
 import systemsupervisor.statuswriter.messages.RequestFromAppMessage
 import java.io.FileWriter
 import java.io.IOException
+import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
@@ -53,6 +54,9 @@ class WriteStatus {
                 val jsonParser = JsonParser().parse(root.toString())
                 val prettyJsonString = GsonBuilder().setPrettyPrinting().create().toJson(jsonParser)
                 val filepath = Paths.get(System.getProperty("user.dir"), "data.json").toString()
+                val fileToDeletePath = Paths.get(filepath)
+                Files.deleteIfExists(fileToDeletePath)
+
                 FileWriter(filepath).use({ file ->
                     file.write(prettyJsonString)
                     System.err.println("Saved state!")

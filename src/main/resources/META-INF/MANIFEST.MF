@@ -1,11 +1,10 @@
 Manifest-Version: 1.0
-Class-Path: scala-library-2.11.11.jar ssl-config-core_2.11-0.2.2.jar s
- cala-parser-combinators_2.11-1.0.4.jar akka-remote_2.11-2.5.6.jar gso
- n-2.3.jar aeron-client-1.3.0.jar netty-3.10.6.Final.jar annotations-1
- 3.0.jar akka-protobuf_2.11-2.5.6.jar aeron-driver-1.3.0.jar kotlin-st
- dlib.jar kotlin-reflect.jar kotlin-test.jar kotlin-stdlib-jre7.jar ko
- tlin-stdlib-jre8.jar akka-actor_2.11-2.5.6.jar config-1.3.1.jar react
- ive-streams-1.0.1.jar akka-stream_2.11-2.5.6.jar agrona-0.9.6.jar kot
- lin-stdlib-1.1.51.jar scala-java8-compat_2.11-0.7.0.jar
+Class-Path: aeron-driver-1.3.0.jar gson-2.3.jar akka-protobuf_2.11-2.5
+ .6.jar akka-stream_2.11-2.5.6.jar scala-parser-combinators_2.11-1.0.4
+ .jar annotations-13.0.jar scala-library-2.11.11.jar config-1.3.1.jar 
+ ssl-config-core_2.11-0.2.2.jar reactive-streams-1.0.1.jar akka-remote
+ _2.11-2.5.6.jar agrona-0.9.6.jar akka-actor_2.11-2.5.6.jar scala-java
+ 8-compat_2.11-0.7.0.jar kotlin-stdlib-1.1.51.jar aeron-client-1.3.0.j
+ ar netty-3.10.6.Final.jar
 Main-Class: NodeKt
 
