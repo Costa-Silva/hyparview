@@ -70,6 +70,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     fun globalBroadcast() {
         val message = StatusMessage(globalView.hashCode(), pendingEvents, toRemove.isEmpty())
         pvActor.tell(StatusMessageWrapper(message, self), ActorRef.noSender())
+        System.err.println("manderei: $pendingEvents")
         pendingEvents.clear()
         gVMCounter.messagesBroadcast++
     }
@@ -158,6 +159,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     fun partialDeliver(message: StatusMessageWrapper) {
         val hash = message.statusMessage.hash
         val newEvents = message.statusMessage.pendingEvents
+        System.err.println("chegou: $newEvents")
         val toRemoveIsEmpty = message.statusMessage.toRemoveIsEmpty
         val senderID = message.sender
 
