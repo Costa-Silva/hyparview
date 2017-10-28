@@ -248,7 +248,8 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                         try {
                             gVMCounter.messagesToCheckIfAlive++
                             val future = Patterns.ask(entry.key, PingMessage(), CHECK_IF_ALIVE_TIMEOUT_MS)
-                            isAlive = Await.result(future, FiniteDuration(CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) as Boolean
+                            Await.result(future, FiniteDuration(CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) as Boolean
+                            isAlive = true
                         } catch (e: Exception) {
                             System.err.println("dead as fuck ${entry.key}")
                         }
