@@ -68,13 +68,8 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     }
 
     fun globalBroadcast() {
-
-        //val setPending = mutableSetOf<Pair<UUID, Event>>()
-        //setPending.addAll(pendingEvents.map { Pair(it.key, it.value) })
-        
         val message = StatusMessage(globalView.hashCode(), pendingEvents.toMutableMap(), toRemove.isEmpty())
         pvActor.tell(StatusMessageWrapper(message, self), ActorRef.noSender())
-        System.err.println("manderei: $pendingEvents")
         pendingEvents.clear()
         gVMCounter.messagesBroadcast++
     }
@@ -163,7 +158,6 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     fun partialDeliver(message: StatusMessageWrapper) {
         val hash = message.statusMessage.hash
         val newEvents = message.statusMessage.pendingEvents
-        System.err.println("chegou: $newEvents")
         val toRemoveIsEmpty = message.statusMessage.toRemoveIsEmpty
         val senderID = message.sender
 
@@ -246,7 +240,6 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
         otherGlobalView
                 .filter { !globalView.containsKey(it.key)}
                 .forEach { entry ->
-                    System.err.println("a tratar de: ${entry.key}")
                     var isAlive = false
                     if (entry.key != self) {
                         try {
@@ -255,13 +248,12 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                             Await.result(future, FiniteDuration(CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) as Boolean
                             isAlive = true
                         } catch (e: Exception) {
-                            System.err.println("dead as fuck ${entry.key}")
+                            System.err.println("Couldn't connect to ${entry.key}")
                         }
                     } else {
                         isAlive = true
                     }
                     if(isAlive) {
-                        System.err.println("afinal está vivo: ${entry.key}")
                         globalNewNode(entry.key, entry.value, false)
                     } else {
                         addToEventList(UUID.randomUUID(), Event(EventEnum.MAY_BE_DEAD, entry.key, entry.value))
@@ -277,7 +269,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                             val future = Patterns.ask(entry.key, PingMessage(), CHECK_IF_ALIVE_TIMEOUT_MS)
                             isAlive = Await.result(future, FiniteDuration(CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) as Boolean
                         } catch (e: Exception) {
-                            System.err.println("dead as fuck ${entry.key}")
+                            System.err.println("Couldn't connect to ${entry.key}")
                         }
                     }else {
                         isAlive = true

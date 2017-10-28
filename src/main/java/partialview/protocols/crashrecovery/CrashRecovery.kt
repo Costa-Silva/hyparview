@@ -30,7 +30,6 @@ class CrashRecovery(private val activeView: MutableSet<ActorRef>,
         if(activeView.contains(node)) {
             viewOperations.nodeFailedSoRemoveFromActive(node)
             val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
-            System.err.println("o $node morreu")
             sendNeighborRequest(priority)
             gvActor.tell(MayBeDeadMessage(node),self)
         } else if(passiveActiveView.contains(node)) {
@@ -75,7 +74,7 @@ class CrashRecovery(private val activeView: MutableSet<ActorRef>,
                         val future = Patterns.ask(it, PingMessage(), GVHelpers.CHECK_IF_ALIVE_TIMEOUT_MS)
                         Await.result(future, FiniteDuration(GVHelpers.CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) as Boolean
                     } catch (e: Exception) {
-                        System.err.println("Dead from passive")
+                        System.err.println("$it was dead in passive view")
                         viewOperations.removeFromPassiveActive(it)
                         return
                     }
