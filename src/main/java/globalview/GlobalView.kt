@@ -26,12 +26,6 @@ import java.util.*
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.TimeUnit
 
-
-
-
-
-
-
 class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                  private val pendingEvents: MutableMap<UUID, Event>,
                  private val toRemove: MutableSet<ActorRef>,
