@@ -1,4 +1,4 @@
-package partialview.protocols.suffle
+package partialview.protocols.shuffle
 
 import akka.actor.ActorRef
 import akkanetwork.AkkaUtils
@@ -6,8 +6,8 @@ import partialview.PVHelpers
 import partialview.PVHelpers.Companion.PASSIVE_VIEW_MAX_SIZE
 import partialview.PVMessagesCounter
 import partialview.ViewOperations
-import partialview.protocols.suffle.messages.ShuffleMessage
-import partialview.protocols.suffle.messages.ShuffleReplyMessage
+import partialview.protocols.shuffle.messages.ShuffleMessage
+import partialview.protocols.shuffle.messages.ShuffleReplyMessage
 import java.util.*
 
 class Shuffle(private val activeView: MutableSet<ActorRef>,

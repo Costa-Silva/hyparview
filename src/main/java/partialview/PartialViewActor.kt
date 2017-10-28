@@ -12,14 +12,12 @@ import partialview.protocols.crashrecovery.messages.NeighborRequestMessage
 import partialview.protocols.crashrecovery.messages.NeighborRequestReplyMessage
 import partialview.protocols.entropy.messages.CutTheWireMessage
 import partialview.protocols.entropy.messages.KillMessage
-import partialview.protocols.gossip.messages.GossipMessage
-import partialview.protocols.gossip.messages.StatusMessageWrapper
 import partialview.protocols.membership.messages.DisconnectMessage
 import partialview.protocols.membership.messages.DiscoverContactRefMessage
 import partialview.protocols.membership.messages.ForwardJoinMessage
 import partialview.protocols.membership.messages.JoinMessage
-import partialview.protocols.suffle.messages.ShuffleMessage
-import partialview.protocols.suffle.messages.ShuffleReplyMessage
+import partialview.protocols.shuffle.messages.ShuffleMessage
+import partialview.protocols.shuffle.messages.ShuffleReplyMessage
 import partialview.wrappers.PVDependenciesWrapper
 import java.util.*
 
@@ -62,10 +60,6 @@ class PartialViewActor(pvWrapper: PVDependenciesWrapper): AbstractActor() {
                 .match(ShuffleMessage::class.java) { partialView.shuffleReceived(it.sample, it.timeToLive, it.uuid, it.origin, sender) }
                 .match(ShuffleReplyMessage::class.java) { partialView.shuffleReplyReceived(it.sample, it.uuid) }
                 .match(PingMessage::class.java) { sender.tell(true, sender) }
-
-                // Global View Messages
-                .match(StatusMessageWrapper::class.java) { partialView.broadcast(it) }
-                .match(GossipMessage::class.java) { partialView.gossipMessageReceived(it) }
 
                 // Entropy Messages
                 .match(CutTheWireMessage::class.java) { partialView.cutTheWireReceived(it.disconnectNodeID) }

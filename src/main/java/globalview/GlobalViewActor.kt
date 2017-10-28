@@ -2,20 +2,18 @@ package globalview
 
 import akka.actor.AbstractActor
 import akka.actor.Props
-import globalview.GVHelpers.Companion.SEND_EVENTS_MESSAGE
-import globalview.GVHelpers.Companion.SEND_HASH_MESSAGE
+import communicationview.messages.StatusMessageWrapper
 import globalview.messages.external.ConflictMessage
 import globalview.messages.external.GiveGlobalMessage
 import globalview.messages.external.GlobalMessage
 import globalview.messages.external.PingMessage
 import globalview.messages.internal.MayBeDeadMessage
 import globalview.messages.internal.PartialDiscoveredNewNode
-import partialview.protocols.gossip.messages.StatusMessageWrapper
 
 class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
 
     private val globalView = GlobalView(gvWrapper.eventList, gvWrapper.pendingEvents, gvWrapper.toRemove,
-            gvWrapper.globalView, self, gvWrapper.partialActor , gvWrapper.system, gvWrapper.gVMCounter,
+            gvWrapper.globalView, self, gvWrapper.system, gvWrapper.gVMCounter, gvWrapper.partialActor,gvWrapper.commActor,
             gvWrapper.imContact)
 
     companion object {
@@ -31,18 +29,22 @@ class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
                 .match(ConflictMessage::class.java) { globalView.conflictMessageReceived(it.myGlobalView) }
                 .match(PingMessage::class.java) { sender.tell(true, sender) }
 
-                // Internal messages
-                .match(StatusMessageWrapper::class.java) { globalView.partialDeliver(it) }
-                .match(MayBeDeadMessage::class.java) { globalView.partialNodeMayBeDead(it.partialNode) }
-                .match(PartialDiscoveredNewNode::class.java) { globalView.globalNewNode(it.newGlobalNode, it.newPartialNode ,true) }
-
                 // From myself
                 .match(String::class.java) {
                     when(it) {
-                        SEND_HASH_MESSAGE -> globalView.sendHash()
-                        SEND_EVENTS_MESSAGE -> globalView.sendEvents()
+                        GVHelpers.SEND_HASH_MESSAGE -> globalView.sendHash()
+                        GVHelpers.SEND_EVENTS_MESSAGE -> globalView.sendEvents()
                     }
                 }
+
+                // Internal messages
+                // from Partial view
+                .match(MayBeDeadMessage::class.java) { globalView.partialNodeMayBeDead(it.partialNode) }
+                .match(PartialDiscoveredNewNode::class.java) { globalView.globalNewNode(it.newGlobalNode, it.newPartialNode ,true) }
+
+                // from Communication view
+                .match(StatusMessageWrapper::class.java) { globalView.partialDeliver(it) }
+
                 .build()
 
     }

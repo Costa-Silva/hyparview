@@ -3,6 +3,8 @@ package partialview
 import akka.actor.ActorContext
 import akka.actor.ActorRef
 import akkanetwork.AkkaUtils
+import communicationview.ActorUpdateEvent
+import communicationview.messages.UpdateActorMessage
 import partialview.protocols.membership.messages.DisconnectMessage
 import java.util.*
 
@@ -11,7 +13,8 @@ class ViewOperations(private var activeView: MutableSet<ActorRef>,
                      private var passiveActiveView: MutableSet<ActorRef>,
                      private var self: ActorRef,
                      private var context: ActorContext,
-                     private val mCounter: PVMessagesCounter) {
+                     private val mCounter: PVMessagesCounter,
+                     private val comActor: ActorRef) {
 
     private var timer = Timer()
     private var watchSet = mutableSetOf<ActorRef>()
@@ -27,6 +30,7 @@ class ViewOperations(private var activeView: MutableSet<ActorRef>,
             }
             addToWatchSet(node)
             activeView.add(node)
+            comActor.tell(UpdateActorMessage(node, ActorUpdateEvent.NEW_ACTOR), self)
         }
     }
 
@@ -62,11 +66,13 @@ class ViewOperations(private var activeView: MutableSet<ActorRef>,
 
     fun activeToPassive(node: ActorRef) {
         activeView.remove(node)
+        comActor.tell(UpdateActorMessage(node, ActorUpdateEvent.DELETE_ACTOR), self)
         addNodePassiveView(node)
     }
 
     fun nodeFailedSoRemoveFromActive(node: ActorRef) {
         activeView.remove(node)
+        comActor.tell(UpdateActorMessage(node, ActorUpdateEvent.DELETE_ACTOR), self)
         removeFromWatchSet(node)
     }
 

@@ -14,5 +14,6 @@ class GVDependenciesWrapper(val eventList: LinkedList<Pair<UUID, Event>> = Linke
                             val nodeId: NodeID,
                             val imContact: Boolean,
                             val partialActor: ActorRef,
+                            val commActor: ActorRef,
                             val system: ActorSystem,
                             val gVMCounter: GVMessagesCounter)

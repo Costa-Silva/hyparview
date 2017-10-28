@@ -1,4 +1,4 @@
-package partialview.protocols.suffle.messages
+package partialview.protocols.shuffle.messages
 
 import akka.actor.ActorRef
 import java.io.Serializable

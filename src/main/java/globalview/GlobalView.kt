@@ -5,6 +5,7 @@ import akka.actor.ActorSystem
 import akka.actor.Cancellable
 import akka.pattern.Patterns
 import akkanetwork.AkkaUtils
+import communicationview.messages.StatusMessageWrapper
 import globalview.GVHelpers.Companion.CHECK_IF_ALIVE_TIMEOUT_MS
 import globalview.GVHelpers.Companion.MAY_BE_DEAD_PERIOD_MS
 import globalview.GVHelpers.Companion.SEND_EVENTS_MESSAGE
@@ -18,7 +19,6 @@ import globalview.messages.external.GiveGlobalMessage
 import globalview.messages.external.GlobalMessage
 import globalview.messages.external.PingMessage
 import globalview.messages.internal.StatusMessage
-import partialview.protocols.gossip.messages.StatusMessageWrapper
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.concurrent.duration.FiniteDuration
@@ -29,14 +29,15 @@ import java.util.concurrent.TimeUnit
 class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                  private val pendingEvents: MutableMap<UUID, Event>,
                  private val toRemove: MutableSet<ActorRef>,
-                 private val globalView: ConcurrentMap<ActorRef, ActorRef>,
+                 private val globalView: ConcurrentMap<ActorRef, ActorRef>, // global-partial
                  private val self: ActorRef,
-                 private val pvActor: ActorRef,
                  private val system: ActorSystem,
                  private val gVMCounter: GVMessagesCounter,
+                 private val pvActor: ActorRef,
+                 private val commActor: ActorRef,
                  imContact: Boolean) {
 
-    val actorswithDifferentHash = mutableSetOf<ActorRef>()
+    private val actorswithDifferentHash = mutableSetOf<ActorRef>()
     val timersMayBeDead = mutableMapOf<UUID, Timer>()
     var sendEventsTimer: Cancellable? = null
 
@@ -69,12 +70,13 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
 
     fun globalBroadcast() {
         val message = StatusMessage(globalView.hashCode(), pendingEvents.toMutableMap(), toRemove.isEmpty())
-        pvActor.tell(StatusMessageWrapper(message, self), ActorRef.noSender())
+        commActor.tell(StatusMessageWrapper(message, self), ActorRef.noSender())
         pendingEvents.clear()
         gVMCounter.messagesBroadcast++
     }
 
     private fun globalAdd(globalNewNode: ActorRef, partialNewNode: ActorRef, needsGlobal: Boolean) {
+        //TODO WRITE TO FILE
         globalView.put(globalNewNode, partialNewNode)
         if (needsGlobal) {
             sendGlobalMessage(globalNewNode)
@@ -84,6 +86,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     fun receivedGlobalMessage(newView: MutableMap<ActorRef, ActorRef>, eventIds: LinkedList<Pair<UUID, Event>>) {
         globalView.clear()
         eventList.clear()
+        //TODO WRITE TO FILE
         globalView.putAll(newView)
         eventList.addAll(eventIds)
     }
@@ -93,11 +96,12 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     }
 
     fun remove(node: ActorRef) {
+        //TODO WRITE TO FILE
         globalView.remove(node)
         toRemove.remove(node)
     }
 
-    fun globalMayBeDead(globalNode: ActorRef, partialNode: ActorRef) {
+    private fun globalMayBeDead(globalNode: ActorRef, partialNode: ActorRef) {
         val uuid = UUID.randomUUID()
         addToEventList(uuid, Event(EventEnum.MAY_BE_DEAD, globalNode, partialNode))
         toRemove.add(globalNode)
@@ -286,5 +290,4 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
         val globalNode = globalView.filterValues { it == partialNode }.entries.firstOrNull()?.key
         globalNode?.let { globalMayBeDead(it, partialNode)  }
     }
-
 }

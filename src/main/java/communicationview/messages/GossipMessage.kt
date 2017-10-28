@@ -1,4 +1,4 @@
-package partialview.protocols.gossip.messages
+package communicationview.messages
 
 import java.io.Serializable
 
