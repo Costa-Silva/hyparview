@@ -68,7 +68,11 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     }
 
     fun globalBroadcast() {
-        val message = StatusMessage(globalView.hashCode(), pendingEvents, toRemove.isEmpty())
+
+        //val setPending = mutableSetOf<Pair<UUID, Event>>()
+        //setPending.addAll(pendingEvents.map { Pair(it.key, it.value) })
+        
+        val message = StatusMessage(globalView.hashCode(), pendingEvents.toMutableMap(), toRemove.isEmpty())
         pvActor.tell(StatusMessageWrapper(message, self), ActorRef.noSender())
         System.err.println("manderei: $pendingEvents")
         pendingEvents.clear()
