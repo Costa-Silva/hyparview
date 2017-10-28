@@ -2,15 +2,22 @@ package partialview.protocols.crashrecovery
 
 import akka.actor.ActorRef
 import akka.actor.ActorSelection
+import akka.pattern.Patterns
 import akkanetwork.AkkaUtils
+import globalview.GVHelpers
+import globalview.messages.external.PingMessage
 import globalview.messages.internal.MayBeDeadMessage
 import partialview.PVHelpers
 import partialview.PVMessagesCounter
 import partialview.ViewOperations
 import partialview.protocols.crashrecovery.messages.NeighborRequestMessage
 import partialview.protocols.crashrecovery.messages.NeighborRequestReplyMessage
+import scala.concurrent.Await
+import scala.concurrent.duration.FiniteDuration
+import java.util.concurrent.TimeUnit
 
 class CrashRecovery(private val activeView: MutableSet<ActorRef>,
+                    private val passiveView: MutableSet<ActorRef>,
                     private val passiveActiveView: MutableSet<ActorRef>,
                     private val self: ActorRef,
                     private val viewOperations: ViewOperations,
@@ -54,10 +61,25 @@ class CrashRecovery(private val activeView: MutableSet<ActorRef>,
         if (result == NeighborRequestResult.ACCEPTED) {
             viewOperations.passiveToActive(sender)
         } else {
-            val actor = AkkaUtils.chooseRandomWithout(ongoingNeighborRequests, passiveActiveView)
-            // TODO
+            var actorFromPassive = false
+            var actor = AkkaUtils.chooseRandomWithout(ongoingNeighborRequests, passiveActiveView)
+
+            if(actor == null) {
+                actor = AkkaUtils.chooseRandomWithout(ongoingNeighborRequests, passiveView)
+                actorFromPassive = true
+            }
 
             actor?.let {
+                if (actorFromPassive) {
+                    try {
+                        val future = Patterns.ask(it, PingMessage(), GVHelpers.CHECK_IF_ALIVE_TIMEOUT_MS)
+                        Await.result(future, FiniteDuration(GVHelpers.CHECK_IF_ALIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) as Boolean
+                    } catch (e: Exception) {
+                        System.err.println("Dead from passive")
+                        viewOperations.removeFromPassiveActive(it)
+                        return
+                    }
+                }
                 val priority = if(activeView.size == 0) Priority.HIGH else Priority.LOW
                 mCounter.neighborRequestsSent++
                 ongoingNeighborRequests.add(it)

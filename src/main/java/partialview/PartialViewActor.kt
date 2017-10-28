@@ -7,6 +7,7 @@ import akkanetwork.AkkaConstants
 import akkanetwork.AkkaConstants.Companion.GLOBAL_ACTOR
 import akkanetwork.AkkaConstants.Companion.SYSTEM_NAME
 import akkanetwork.AkkaUtils
+import globalview.messages.external.PingMessage
 import partialview.protocols.crashrecovery.messages.NeighborRequestMessage
 import partialview.protocols.crashrecovery.messages.NeighborRequestReplyMessage
 import partialview.protocols.entropy.messages.CutTheWireMessage
@@ -60,6 +61,7 @@ class PartialViewActor(pvWrapper: PVDependenciesWrapper): AbstractActor() {
                 .match(NeighborRequestReplyMessage::class.java) { partialView.helpMeResponseReceived(it.result, sender) }
                 .match(ShuffleMessage::class.java) { partialView.shuffleReceived(it.sample, it.timeToLive, it.uuid, it.origin, sender) }
                 .match(ShuffleReplyMessage::class.java) { partialView.shuffleReplyReceived(it.sample, it.uuid) }
+                .match(PingMessage::class.java) { sender.tell(true, sender) }
 
                 // Global View Messages
                 .match(StatusMessageWrapper::class.java) { partialView.broadcast(it) }

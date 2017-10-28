@@ -18,7 +18,7 @@ class PartialView(pvWrapper: PVDependenciesWrapper, context: ActorContext,
                   self: ActorRef, globalActor: ActorSelection) {
 
     private val viewOperations = ViewOperations(pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView,self, context, pvWrapper.mCounter)
-    private val crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, self, viewOperations, globalActor, pvWrapper.mCounter)
+    private val crashRecovery = CrashRecovery(pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView, self, viewOperations, globalActor, pvWrapper.mCounter)
     private val shuffle = Shuffle(pvWrapper.activeView, pvWrapper.passiveView, viewOperations, self, pvWrapper.mCounter)
     private val membership = Membership(pvWrapper.activeView, viewOperations, self, crashRecovery, globalActor, pvWrapper.mCounter)
     private val entropy = Entropy(pvWrapper.activeView, crashRecovery)

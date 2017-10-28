@@ -52,6 +52,8 @@ class WriteStatus {
                 root.add("data", nodesInfoArray)
                 val jsonParser = JsonParser().parse(root.toString())
                 val prettyJsonString = GsonBuilder().setPrettyPrinting().create().toJson(jsonParser)
+
+
                 val filepath = Paths.get(System.getProperty("user.dir"), "data.json").toString()
                 FileWriter(filepath).use({ file ->
                     file.write(prettyJsonString)
