@@ -41,9 +41,10 @@ class SystemStatus(system: ActorSystem, pvData: PVSharedData, gvData: GVSharedDa
                 "2.4" -> printlnErr("Nodes that might be dead: ${gvData.toRemove.map { it.path().name()}}")
                 "2.5" -> printlnErr("Messages sent to check if alive: ${gvData.gVMCounter.messagesToCheckIfAlive}")
                 "2.6" -> printlnErr("Messages sent to resolve conflicts: ${gvData.gVMCounter.messagesToResolveConflict}")
+                "2.7" -> printlnErr("Broadcast messages sent by global: ${gvData.gVMCounter.messagesBroadcast}")
                 "4.1" -> entropyOptions.cutTheWireOption()
                 "4.2" -> entropyOptions.killOption()
-                "5.1" -> WriteStatus.writeToFile(pvData, statusActor)
+                "5.1" -> WriteStatus.writeToFile(pvData, gvData.globalView, statusActor)
                 else -> {println("Unknown command. Usage: 1.1")}
             }
             //Thread.sleep(2000)

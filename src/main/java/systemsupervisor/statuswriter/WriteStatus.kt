@@ -20,40 +20,30 @@ import java.util.concurrent.TimeUnit
 class WriteStatus {
 
     companion object {
-        fun writeToFile(pvData: PVSharedData, statusActor: ActorRef) {
-            val ERRORS_ALLOWED = 5
-            var errorCount = 0
+        fun writeToFile(pvData: PVSharedData, globalView: MutableMap<ActorRef, ActorRef>, statusActor: ActorRef) {
             val root = JsonObject()
             root.addProperty("system", AkkaConstants.SYSTEM_NAME)
             val nodesInfoArray = JsonArray()
 
-            for (i in 0..10000) {
-                if(ERRORS_ALLOWED>errorCount) {
-                    val nodeID = AkkaUtils.createNodeID("${i}node")
-                    if (nodeID != null) {
-                        if(nodeID.identifier != pvData.identifier) {
+            globalView.keys.forEach {
+                    val identifier = it.path().name().split("global")[0]
+                    val nodeID = AkkaUtils.createNodeID(identifier)
+                    if(nodeID != null) {
+                        if (pvData.identifier != identifier) {
                             val newEntry = nodeInfoFor(nodeID, statusActor)
                             if (newEntry != null) {
                                 nodesInfoArray.add(newEntry)
-                            } else {
-                                errorCount++
                             }
                         } else {
                             nodesInfoArray.add(createNodeInfo(pvData))
                         }
-                    } else {
-                        break
                     }
-                }else {
-                    break
-                }
             }
 
             try {
                 root.add("data", nodesInfoArray)
                 val jsonParser = JsonParser().parse(root.toString())
                 val prettyJsonString = GsonBuilder().setPrettyPrinting().create().toJson(jsonParser)
-
 
                 val filepath = Paths.get(System.getProperty("user.dir"), "data.json").toString()
                 val fileToDeletePath = Paths.get(filepath)

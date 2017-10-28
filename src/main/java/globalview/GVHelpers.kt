@@ -5,7 +5,7 @@ import java.util.*
 class GVHelpers {
     companion object {
         // Timers
-        const val SEND_HASH_PERIOD_MS: Long = 5000
+        const val SEND_HASH_PERIOD_MS: Long = 10000
         const val SEND_EVENTS_PERIOD_MS: Long = 5000
         const val MAY_BE_DEAD_PERIOD_MS: Long = 3000
 

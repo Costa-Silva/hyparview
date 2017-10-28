@@ -1,0 +1,37 @@
+{
+  "system": "NoFails",
+  "data": [
+    {
+      "id": "0node",
+      "av": [
+        "1node"
+      ],
+      "pv": [],
+      "JoinsReceived": 1,
+      "ForwardJoinsReceived": 0,
+      "ForwardJoinsSent": 0,
+      "NeighborRequestsReceived": 0,
+      "NeighborRequestsSent": 0,
+      "DisconnectsReceived": 0,
+      "DisconnectsSent": 0,
+      "ShufflesReceived": 2,
+      "ShufflesSent": 2
+    },
+    {
+      "id": "1node",
+      "av": [
+        "0node"
+      ],
+      "pv": [],
+      "JoinsReceived": 0,
+      "ForwardJoinsReceived": 0,
+      "ForwardJoinsSent": 0,
+      "NeighborRequestsReceived": 0,
+      "NeighborRequestsSent": 0,
+      "DisconnectsReceived": 0,
+      "DisconnectsSent": 0,
+      "ShufflesReceived": 2,
+      "ShufflesSent": 2
+    }
+  ]
+}

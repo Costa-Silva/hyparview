@@ -42,6 +42,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                  private val gVMCounter: GVMessagesCounter,
                  imContact: Boolean) {
 
+    val actorswithDifferentHash = mutableSetOf<ActorRef>()
     val timersMayBeDead = mutableMapOf<UUID, Timer>()
     var sendEventsTimer: Cancellable? = null
 
@@ -75,6 +76,8 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     fun globalBroadcast() {
         val message = StatusMessage(globalView.hashCode(), pendingEvents, toRemove.isEmpty())
         pvActor.tell(StatusMessageWrapper(message, self), ActorRef.noSender())
+        pendingEvents.clear()
+        gVMCounter.messagesBroadcast++
     }
 
     private fun globalAdd(globalNewNode: ActorRef, partialNewNode: ActorRef, needsGlobal: Boolean) {
@@ -217,13 +220,19 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     private fun globalCompare(hash: Int, sender: ActorRef) {
         val myHash = globalView.hashCode()
         if (myHash != hash) {
-            val myNumber = AkkaUtils.numberFromIdentifier(self.path().name())
-            val enemyNumber = AkkaUtils.numberFromIdentifier(sender.path().name())
-            if (enemyNumber>myNumber) {
-                gVMCounter.messagesToResolveConflict++
-                sender.tell(ConflictMessage(globalView), self)
+
+            if (actorswithDifferentHash.contains(sender)) {
+                actorswithDifferentHash.remove(sender)
+                val myNumber = AkkaUtils.numberFromIdentifier(self.path().name())
+                val enemyNumber = AkkaUtils.numberFromIdentifier(sender.path().name())
+                if (enemyNumber>myNumber) {
+                    gVMCounter.messagesToResolveConflict++
+                    sender.tell(ConflictMessage(globalView), self)
+                } else {
+                    sender.tell(GiveGlobalMessage(), self)
+                }
             } else {
-                sender.tell(GiveGlobalMessage(), self)
+                actorswithDifferentHash.add(sender)
             }
         }
     }
@@ -279,8 +288,8 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     }
 
     fun partialNodeMayBeDead(partialNode: ActorRef) {
-        val globalNode = globalView.filterValues { it == partialNode }.entries.first().key
-        globalMayBeDead(globalNode, partialNode)
+        val globalNode = globalView.filterValues { it == partialNode }.entries.firstOrNull()?.key
+        globalNode?.let { globalMayBeDead(it, partialNode)  }
     }
 
 }
