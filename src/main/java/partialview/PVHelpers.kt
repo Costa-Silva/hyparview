@@ -6,15 +6,15 @@ class PVHelpers {
     companion object {
         // HyParView config
         const val ACTIVE_VIEW_MAX_SIZE = 2
-        const val PASSIVE_VIEW_MAX_SIZE = 5
+        const val PASSIVE_VIEW_MAX_SIZE = 7
 
         // Join Protocol
         const val ARWL = 3
         const val PRWL = 1
-        const val N_ACTIVE_NODES_SHUFF = 2
-        const val N_PASSIVE_NODES_SHUFF = 5
 
         // Shuffle protocol
+        const val N_ACTIVE_NODES_SHUFF = 2
+        const val N_PASSIVE_NODES_SHUFF = 4
         const val SHUFFLE_TTL = 3
         const val TTSHUFFLE_MS: Long = 5000
 
