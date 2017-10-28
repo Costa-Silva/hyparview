@@ -242,6 +242,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
         otherGlobalView
                 .filter { !globalView.containsKey(it.key)}
                 .forEach { entry ->
+                    System.err.println("a tratar de: ${entry.key}")
                     var isAlive = false
                     if (entry.key != self) {
                         try {
@@ -255,6 +256,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                         isAlive = true
                     }
                     if(isAlive) {
+                        System.err.println("afinal está vivo: ${entry.key}")
                         globalNewNode(entry.key, entry.value, false)
                     } else {
                         addToEventList(UUID.randomUUID(), Event(EventEnum.MAY_BE_DEAD, entry.key, entry.value))
