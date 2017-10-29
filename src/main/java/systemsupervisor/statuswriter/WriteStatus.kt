@@ -6,6 +6,7 @@ import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
 import com.google.gson.*
+import communicationview.wrappers.CommSharedData
 import globalview.GVSharedData
 import partialview.wrappers.PVSharedData
 import scala.concurrent.Await
@@ -21,24 +22,24 @@ import java.util.concurrent.TimeUnit
 class WriteStatus {
 
     companion object {
-        fun writeToFile(pvData: PVSharedData, gvData: GVSharedData, statusActor: ActorRef) {
+        fun writeToFile(pvData: PVSharedData, commWrapper: CommSharedData, gvData: GVSharedData, statusActor: ActorRef) {
             val root = JsonObject()
             root.addProperty("system", AkkaConstants.SYSTEM_NAME)
             val nodesInfoArray = JsonArray()
 
             gvData.globalView.keys.forEach {
-                    val identifier = it.path().name().split("global")[0]
-                    val nodeID = AkkaUtils.createNodeID(identifier)
-                    if(nodeID != null) {
-                        if (pvData.identifier != identifier) {
-                            val newEntry = nodeInfoFor(nodeID, statusActor, gvData)
-                            if (newEntry != null) {
-                                nodesInfoArray.add(newEntry)
-                            }
-                        } else {
-                            nodesInfoArray.add(createNodeInfo(pvData, gvData))
+                val identifier = it.path().name().split("global")[0]
+                val nodeID = AkkaUtils.createNodeID(identifier)
+                if(nodeID != null) {
+                    if (pvData.identifier != identifier) {
+                        val newEntry = nodeInfoFor(nodeID, statusActor)
+                        if (newEntry != null) {
+                            nodesInfoArray.add(newEntry)
                         }
+                    } else {
+                        nodesInfoArray.add(createNodeInfo(pvData, commWrapper, gvData))
                     }
+                }
             }
 
             try {
@@ -59,20 +60,18 @@ class WriteStatus {
             }
         }
 
-        private fun nodeInfoFor(nodeID: NodeID, statusActor: ActorRef, gvData: GVSharedData): JsonObject? {
+        private fun nodeInfoFor(nodeID: NodeID, statusActor: ActorRef): JsonObject? {
             val timeoutTime: Long = 500
             try {
                 val future = Patterns.ask(statusActor, RequestFromAppMessage(nodeID.identifier),timeoutTime)
                 val result = Await.result(future, FiniteDuration(timeoutTime, TimeUnit.MILLISECONDS))
-                if (result != null) {
-                    val message = result as NodeStateMessage
-                    return createNodeInfo(message.partialViewData, gvData)
-                }
+                val message = result as NodeStateMessage
+                return createNodeInfo(message.partialViewData, message.commViewData, message.glovalViewData)
             } catch (e: Exception) { }
             return null
         }
 
-        private fun createNodeInfo(pvData: PVSharedData, gvData: GVSharedData): JsonObject {
+        private fun createNodeInfo(pvData: PVSharedData, commWrapper: CommSharedData, gvData: GVSharedData): JsonObject {
             val nodeInfo = JsonObject()
             nodeInfo.addProperty("id", pvData.identifier)
 
@@ -110,8 +109,8 @@ class WriteStatus {
             nodeInfo.addProperty("ShufflesReceived", mCounter.shufflesReceived)
             nodeInfo.addProperty("ShufflesSent", mCounter.shufflesSent)
 
-            nodeInfo.addProperty("BroadcastsSent", gvData.commWrapper.commMessages.sent)
-            nodeInfo.addProperty("BroadcastsReceived", gvData.commWrapper.commMessages.received)
+            nodeInfo.addProperty("BroadcastsSent", commWrapper.commMessages.sent)
+            nodeInfo.addProperty("BroadcastsReceived", commWrapper.commMessages.received)
 
             nodeInfo.addProperty("ResolveConflicts", gvData.gVMCounter.messagesToResolveConflict)
             nodeInfo.addProperty("ChecksIfAlive", gvData.gVMCounter.messagesToCheckIfAlive)

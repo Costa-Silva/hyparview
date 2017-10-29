@@ -1,14 +1,14 @@
 package systemsupervisor
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
-import communicationview.wrappers.CommunicationWrapper
+import communicationview.wrappers.CommSharedData
 import globalview.GVSharedData
 import partialview.PVHelpers
 import partialview.wrappers.PVSharedData
 import systemsupervisor.statuswriter.WriteStatus
 
 
-class SystemStatus(system: ActorSystem, pvData: PVSharedData, commWrapper: CommunicationWrapper, gvData: GVSharedData,
+class SystemStatus(system: ActorSystem, pvData: PVSharedData, commWrapper: CommSharedData, gvData: GVSharedData,
                    statusActor: ActorRef) {
 
     private val entropyOptions = EntropyOptions(system)
@@ -46,7 +46,7 @@ class SystemStatus(system: ActorSystem, pvData: PVSharedData, commWrapper: Commu
                 "3.2" -> printlnErr("Available nodes: ${commWrapper.availableActors.map { it.split("/user/")[1] }}")
                 "4.1" -> entropyOptions.cutTheWireOption()
                 "4.2" -> entropyOptions.killOption()
-                "5.1" -> WriteStatus.writeToFile(pvData, gvData, statusActor)
+                "5.1" -> WriteStatus.writeToFile(pvData, commWrapper, gvData, statusActor)
                 else -> {
                     println("Unknown command. Usage: 1.1")
                     printOptions()

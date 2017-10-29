@@ -11,9 +11,9 @@ import communicationview.ActorUpdateEvent.NEW_ACTOR
 import communicationview.messages.GossipMessage
 import communicationview.messages.StatusMessageWrapper
 import communicationview.wrappers.CommunicationMessages
-import communicationview.wrappers.CommunicationWrapper
+import communicationview.wrappers.CommSharedData
 
-class Communication(private val commWrapper: CommunicationWrapper,
+class Communication(private val commWrapper: CommSharedData,
                     private val comMessages: CommunicationMessages,
                     private val context: ActorContext,
                     private val availableActors: MutableSet<String>) {

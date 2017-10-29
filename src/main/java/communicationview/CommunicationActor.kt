@@ -5,14 +5,14 @@ import akka.actor.Props
 import communicationview.messages.GossipMessage
 import communicationview.messages.StatusMessageWrapper
 import communicationview.messages.UpdateActorMessage
-import communicationview.wrappers.CommunicationWrapper
+import communicationview.wrappers.CommSharedData
 
-class CommunicationActor(commWrapper: CommunicationWrapper): AbstractActor() {
+class CommunicationActor(commWrapper: CommSharedData): AbstractActor() {
 
     private val communication = Communication(commWrapper, commWrapper.commMessages, context, commWrapper.availableActors)
 
     companion object {
-        fun props(commWrapper: CommunicationWrapper): Props {
+        fun props(commWrapper: CommSharedData): Props {
             return Props.create(CommunicationActor::class.java) { CommunicationActor(commWrapper) }
         }
     }

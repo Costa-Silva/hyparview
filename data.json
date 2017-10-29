@@ -2,30 +2,6 @@
   "system": "NoFails",
   "data": [
     {
-      "id": "1node",
-      "av": [
-        "0node"
-      ],
-      "pv": [],
-      "gv": [
-        "1node",
-        "0node"
-      ],
-      "JoinsReceived": 0,
-      "ForwardJoinsReceived": 0,
-      "ForwardJoinsSent": 0,
-      "NeighborRequestsReceived": 0,
-      "NeighborRequestsSent": 0,
-      "DisconnectsReceived": 0,
-      "DisconnectsSent": 0,
-      "ShufflesReceived": 2,
-      "ShufflesSent": 2,
-      "BroadcastsSent": 1,
-      "BroadcastsReceived": 0,
-      "ResolveConflicts": 0,
-      "ChecksIfAlive": 0
-    },
-    {
       "id": "0node",
       "av": [
         "1node"
@@ -42,9 +18,9 @@
       "NeighborRequestsSent": 0,
       "DisconnectsReceived": 0,
       "DisconnectsSent": 0,
-      "ShufflesReceived": 2,
-      "ShufflesSent": 2,
-      "BroadcastsSent": 1,
+      "ShufflesReceived": 0,
+      "ShufflesSent": 0,
+      "BroadcastsSent": 0,
       "BroadcastsReceived": 0,
       "ResolveConflicts": 0,
       "ChecksIfAlive": 0
