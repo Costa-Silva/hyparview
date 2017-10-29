@@ -30,7 +30,7 @@ class ViewOperations(private var activeView: MutableSet<ActorRef>,
             }
             addToWatchSet(node)
             activeView.add(node)
-            comActor.tell(UpdateActorMessage(node, ActorUpdateEvent.NEW_ACTOR), self)
+            comActor.tell(UpdateActorMessage(node.path(), ActorUpdateEvent.NEW_ACTOR), self)
         }
     }
 
@@ -66,13 +66,13 @@ class ViewOperations(private var activeView: MutableSet<ActorRef>,
 
     fun activeToPassive(node: ActorRef) {
         activeView.remove(node)
-        comActor.tell(UpdateActorMessage(node, ActorUpdateEvent.DELETE_ACTOR), self)
+        comActor.tell(UpdateActorMessage(node.path(), ActorUpdateEvent.DELETE_ACTOR), self)
         addNodePassiveView(node)
     }
 
     fun nodeFailedSoRemoveFromActive(node: ActorRef) {
         activeView.remove(node)
-        comActor.tell(UpdateActorMessage(node, ActorUpdateEvent.DELETE_ACTOR), self)
+        comActor.tell(UpdateActorMessage(node.path(), ActorUpdateEvent.DELETE_ACTOR), self)
         removeFromWatchSet(node)
     }
 

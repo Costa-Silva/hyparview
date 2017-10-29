@@ -3,6 +3,7 @@ package akkanetwork
 import akka.actor.ActorContext
 import akka.actor.ActorRef
 import akka.actor.ActorSelection
+import akkanetwork.AkkaConstants.Companion.SYSTEM_NAME
 import com.typesafe.config.ConfigFactory
 import java.util.*
 
@@ -13,8 +14,12 @@ class AkkaUtils {
             return Integer.parseInt(id.split("node")[0])
         }
 
-        fun lookUpRemote(context: ActorContext, systemName: String, ip: NodeID, type: String): ActorSelection {
-            return context.actorSelection("akka.tcp://$systemName@$ip/user/${ip.identifier+type}")
+        fun lookUpRemote(context: ActorContext, ip: NodeID, type: String): ActorSelection {
+            return context.actorSelection(createActorPathFrom(ip, type))
+        }
+
+        fun createActorPathFrom(ip: NodeID, type: String): String {
+            return "akka.tcp://$SYSTEM_NAME@$ip/user/${ip.identifier+type}"
         }
 
         fun createNodeID(nodeID: String?): NodeID? {

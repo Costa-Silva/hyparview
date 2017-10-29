@@ -5,7 +5,6 @@ import akka.actor.Props
 import akka.actor.Terminated
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaConstants.Companion.GLOBAL_ACTOR
-import akkanetwork.AkkaConstants.Companion.SYSTEM_NAME
 import akkanetwork.AkkaUtils
 import globalview.messages.external.PingMessage
 import partialview.protocols.crashrecovery.messages.NeighborRequestMessage
@@ -23,7 +22,7 @@ import java.util.*
 
 class PartialViewActor(pvWrapper: PVDependenciesWrapper): AbstractActor() {
 
-    private val partialView: PartialView = PartialView(pvWrapper, context, self, AkkaUtils.lookUpRemote(context, SYSTEM_NAME, pvWrapper.myID, GLOBAL_ACTOR))
+    private val partialView: PartialView = PartialView(pvWrapper, context, self, AkkaUtils.lookUpRemote(context, pvWrapper.myID, GLOBAL_ACTOR))
 
     companion object {
         fun props(pvWrapper: PVDependenciesWrapper): Props {
@@ -37,7 +36,7 @@ class PartialViewActor(pvWrapper: PVDependenciesWrapper): AbstractActor() {
             val contactGlobal = object : TimerTask() {
                 override fun run() {
                     if (pvWrapper.globalActorRef != null) {
-                        val contactRemote = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, pvWrapper.contactNode, AkkaConstants.PARTIAL_ACTOR)
+                        val contactRemote = AkkaUtils.lookUpRemote(context, pvWrapper.contactNode, AkkaConstants.PARTIAL_ACTOR)
                         pvWrapper.globalActorRef?.let { contactRemote.tell(JoinMessage(it), self)  }
                     } else {
                         System.err.println("Global was not ready yet")

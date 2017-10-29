@@ -5,10 +5,11 @@ import akka.actor.Props
 import communicationview.messages.GossipMessage
 import communicationview.messages.StatusMessageWrapper
 import communicationview.messages.UpdateActorMessage
+import communicationview.wrappers.CommunicationWrapper
 
 class CommunicationActor(commWrapper: CommunicationWrapper): AbstractActor() {
 
-    private val communication = Communication(self, commWrapper.globalActor, commWrapper.commMessages)
+    private val communication = Communication(commWrapper, commWrapper.commMessages, context, commWrapper.availableActors)
 
     companion object {
         fun props(commWrapper: CommunicationWrapper): Props {
@@ -23,7 +24,7 @@ class CommunicationActor(commWrapper: CommunicationWrapper): AbstractActor() {
                 .match(GossipMessage::class.java) { communication.gossipMessageReceived(it) }
 
                 // from partial view
-                .match(UpdateActorMessage::class.java) { communication.updateActor(it.node, it.event) }
+                .match(UpdateActorMessage::class.java) { communication.updateActor(it.nodePath, it.event) }
                 .build()
     }
 

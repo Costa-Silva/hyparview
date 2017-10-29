@@ -11,7 +11,6 @@ class GVDependenciesWrapper(val eventList: LinkedList<Pair<UUID, Event>> = Linke
                             val pendingEvents: ConcurrentMap<UUID, Event> = ConcurrentHashMap<UUID, Event>(),
                             val toRemove: MutableSet<ActorRef> = mutableSetOf(),
                             val globalView: ConcurrentMap<ActorRef, ActorRef> = ConcurrentHashMap<ActorRef, ActorRef>(),
-                            val nodeId: NodeID,
                             val imContact: Boolean,
                             val partialActor: ActorRef,
                             val commActor: ActorRef,

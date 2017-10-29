@@ -4,78 +4,50 @@
     {
       "id": "1node",
       "av": [
-        "2node",
-        "6node"
+        "0node"
       ],
-      "pv": [
+      "pv": [],
+      "gv": [
+        "1node",
         "0node"
       ],
       "JoinsReceived": 0,
-      "ForwardJoinsReceived": 2,
+      "ForwardJoinsReceived": 0,
       "ForwardJoinsSent": 0,
       "NeighborRequestsReceived": 0,
       "NeighborRequestsSent": 0,
-      "DisconnectsReceived": 1,
+      "DisconnectsReceived": 0,
       "DisconnectsSent": 0,
-      "ShufflesReceived": 50,
-      "ShufflesSent": 55
+      "ShufflesReceived": 2,
+      "ShufflesSent": 2,
+      "BroadcastsSent": 1,
+      "BroadcastsReceived": 0,
+      "ResolveConflicts": 0,
+      "ChecksIfAlive": 0
     },
     {
       "id": "0node",
       "av": [
-        "2node",
-        "6node"
-      ],
-      "pv": [
         "1node"
       ],
-      "JoinsReceived": 3,
-      "ForwardJoinsReceived": 0,
-      "ForwardJoinsSent": 2,
-      "NeighborRequestsReceived": 0,
-      "NeighborRequestsSent": 0,
-      "DisconnectsReceived": 0,
-      "DisconnectsSent": 1,
-      "ShufflesReceived": 50,
-      "ShufflesSent": 47
-    },
-    {
-      "id": "2node",
-      "av": [
-        "0node",
-        "1node"
+      "pv": [],
+      "gv": [
+        "1node",
+        "0node"
       ],
-      "pv": [
-        "6node"
-      ],
-      "JoinsReceived": 0,
-      "ForwardJoinsReceived": 1,
-      "ForwardJoinsSent": 1,
-      "NeighborRequestsReceived": 0,
-      "NeighborRequestsSent": 0,
-      "DisconnectsReceived": 0,
-      "DisconnectsSent": 0,
-      "ShufflesReceived": 50,
-      "ShufflesSent": 52
-    },
-    {
-      "id": "6node",
-      "av": [
-        "0node",
-        "1node"
-      ],
-      "pv": [
-        "2node"
-      ],
-      "JoinsReceived": 0,
+      "JoinsReceived": 1,
       "ForwardJoinsReceived": 0,
       "ForwardJoinsSent": 0,
       "NeighborRequestsReceived": 0,
       "NeighborRequestsSent": 0,
       "DisconnectsReceived": 0,
       "DisconnectsSent": 0,
-      "ShufflesReceived": 49,
-      "ShufflesSent": 45
+      "ShufflesReceived": 2,
+      "ShufflesSent": 2,
+      "BroadcastsSent": 1,
+      "BroadcastsReceived": 0,
+      "ResolveConflicts": 0,
+      "ChecksIfAlive": 0
     }
   ]
 }

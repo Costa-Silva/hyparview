@@ -3,7 +3,6 @@ package partialview.protocols.entropy
 import akka.actor.AbstractActor
 import akka.actor.ActorRef
 import akka.actor.Props
-import akkanetwork.AkkaConstants
 import akkanetwork.AkkaConstants.Companion.PARTIAL_ACTOR
 import akkanetwork.AkkaUtils
 import akkanetwork.NodeID
@@ -26,14 +25,14 @@ class EntropyActor(option: EntropyOptions, arguments: Array<NodeID>): AbstractAc
     }
 
     private fun cutWire(actor1ID: NodeID, actor2ID: NodeID) {
-        val actorSelect1 = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, actor1ID, PARTIAL_ACTOR)
-        val actorSelect2 = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, actor2ID, PARTIAL_ACTOR)
+        val actorSelect1 = AkkaUtils.lookUpRemote(context, actor1ID, PARTIAL_ACTOR)
+        val actorSelect2 = AkkaUtils.lookUpRemote(context, actor2ID, PARTIAL_ACTOR)
         actorSelect1.tell(CutTheWireMessage(actor2ID.identifier), context.self())
         actorSelect2.tell(CutTheWireMessage(actor1ID.identifier), context.self())
     }
 
     private fun kill(actorID: NodeID) {
-        val actor = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME, actorID, PARTIAL_ACTOR)
+        val actor = AkkaUtils.lookUpRemote(context, actorID, PARTIAL_ACTOR)
         actor.tell(KillMessage(), ActorRef.noSender())
     }
 

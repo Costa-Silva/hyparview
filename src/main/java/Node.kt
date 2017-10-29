@@ -5,7 +5,7 @@ import akkanetwork.AkkaConstants.Companion.SYSTEM_NAME
 import akkanetwork.AkkaUtils
 import com.typesafe.config.ConfigFactory
 import communicationview.CommunicationActor
-import communicationview.CommunicationWrapper
+import communicationview.wrappers.CommunicationWrapper
 import globalview.GVDependenciesWrapper
 import globalview.GVMessagesCounter
 import globalview.GVSharedData
@@ -37,15 +37,15 @@ fun main(args: Array<String>) {
         val commRef = system.actorOf(CommunicationActor.props(commWrapper), myIdentifier + AkkaConstants.COMM_ACTOR)
         val pvWrapper = PVDependenciesWrapper(contactNode = contactNode, myID = myNode, comActor = commRef)
         val partialRef = system.actorOf(PartialViewActor.props(pvWrapper), myIdentifier)
-        val gvWrapper = GVDependenciesWrapper(nodeId = myNode, imContact = myNode==contactNode, system= system, gVMCounter = GVMessagesCounter(), partialActor = partialRef, commActor = commRef)
+        val gvWrapper = GVDependenciesWrapper(imContact = myNode==contactNode, system= system, gVMCounter = GVMessagesCounter(), partialActor = partialRef, commActor = commRef)
         val globalRef = system.actorOf(GlobalViewActor.props(gvWrapper), myIdentifier+ AkkaConstants.GLOBAL_ACTOR)
         pvWrapper.globalActorRef = globalRef
         commWrapper.globalActor = globalRef
 
-        val gvSharedData = GVSharedData(gvWrapper.eventList, gvWrapper.pendingEvents, gvWrapper.toRemove, gvWrapper.globalView, gvWrapper.gVMCounter)
+        val gvSharedData = GVSharedData(gvWrapper.eventList, gvWrapper.pendingEvents, gvWrapper.toRemove, gvWrapper.globalView, gvWrapper.gVMCounter, commWrapper)
         val pvSharedData = PVSharedData(myIdentifier, contactNode, pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView, pvWrapper.mCounter)
 
         val statusActor = system.actorOf(StatusActor.props(pvSharedData), myIdentifier+ AkkaConstants.STATUS_ACTOR)
-        SystemStatus(system, pvSharedData, gvSharedData, statusActor)
+        SystemStatus(system, pvSharedData, commWrapper, gvSharedData, statusActor)
     }
 }

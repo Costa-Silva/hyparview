@@ -1,13 +1,14 @@
 package systemsupervisor
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
+import communicationview.wrappers.CommunicationWrapper
 import globalview.GVSharedData
 import partialview.PVHelpers
 import partialview.wrappers.PVSharedData
 import systemsupervisor.statuswriter.WriteStatus
 
 
-class SystemStatus(system: ActorSystem, pvData: PVSharedData, gvData: GVSharedData,
+class SystemStatus(system: ActorSystem, pvData: PVSharedData, commWrapper: CommunicationWrapper, gvData: GVSharedData,
                    statusActor: ActorRef) {
 
     private val entropyOptions = EntropyOptions(system)
@@ -20,9 +21,9 @@ class SystemStatus(system: ActorSystem, pvData: PVSharedData, gvData: GVSharedDa
 
     init {
         while (true) {
-            //printOptions()
             val option = readLine()
             when(option) {
+                "help" -> printOptions()
                 "0.1" -> printlnErr(PVHelpers.ACTIVE_VIEW_MAX_SIZE)
                 "0.2" -> printlnErr(PVHelpers.PASSIVE_VIEW_MAX_SIZE)
                 "0.3" -> printlnErr(PVHelpers.ACTIVE_PASSIVE_VIEW_SIZE)
@@ -41,17 +42,22 @@ class SystemStatus(system: ActorSystem, pvData: PVSharedData, gvData: GVSharedDa
                 "2.4" -> printlnErr("Nodes that might be dead: ${gvData.toRemove.map { it.path().name()}}")
                 "2.5" -> printlnErr("Messages sent to check if alive: ${gvData.gVMCounter.messagesToCheckIfAlive}")
                 "2.6" -> printlnErr("Messages sent to resolve conflicts: ${gvData.gVMCounter.messagesToResolveConflict}")
-                "2.7" -> printlnErr("Broadcast messages sent by global: ${gvData.gVMCounter.messagesBroadcast}")
+                "3.1" -> printlnErr("Broadcast messages sent: ${commWrapper.commMessages.sent} received: ${commWrapper.commMessages.received}")
+                "3.2" -> printlnErr("Available nodes: ${commWrapper.availableActors.map { it.split("/user/")[1] }}")
                 "4.1" -> entropyOptions.cutTheWireOption()
                 "4.2" -> entropyOptions.killOption()
-                "5.1" -> WriteStatus.writeToFile(pvData, gvData.globalView, statusActor)
-                else -> {println("Unknown command. Usage: 1.1")}
+                "5.1" -> WriteStatus.writeToFile(pvData, gvData, statusActor)
+                else -> {
+                    println("Unknown command. Usage: 1.1")
+                    printOptions()
+                }
             }
-            //Thread.sleep(2000)
         }
     }
 
     private fun printOptions(){
+        println("Get help -> help")
+
         println("\nPartialView Configs.")
         println("1)Active View max size -> 0.1")
         println("2)Passive View max size -> 0.2")
@@ -75,6 +81,10 @@ class SystemStatus(system: ActorSystem, pvData: PVSharedData, gvData: GVSharedDa
         println("4)Nodes that might be dead -> 2.4")
         println("5)Messages sent to check if alive -> 2.5")
         println("6)Messages sent to resolve conflicts -> 2.6")
+
+        println("\nCommunication commands.")
+        println("1)Messages sent and received -> 3.1")
+        println("2)Available nodes -> 3.2")
 
         println("\nEntropy commands.")
         println("1)Cut the wire between 2 nodes: 4.1")

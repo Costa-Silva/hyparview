@@ -3,7 +3,6 @@ package systemsupervisor.statuswriter
 import akka.actor.AbstractActor
 import akka.actor.ActorRef
 import akka.actor.Props
-import akkanetwork.AkkaConstants
 import akkanetwork.AkkaConstants.Companion.STATUS_ACTOR
 import akkanetwork.AkkaUtils
 import partialview.wrappers.PVSharedData
@@ -37,7 +36,7 @@ class StatusActor(private val partialViewData: PVSharedData): AbstractActor() {
     private fun requestFromAppReceived(node: String){
         val nodeID = AkkaUtils.createNodeID(node)
         nodeID?.let {
-            val contactNode = AkkaUtils.lookUpRemote(context, AkkaConstants.SYSTEM_NAME,nodeID, STATUS_ACTOR)
+            val contactNode = AkkaUtils.lookUpRemote(context, nodeID, STATUS_ACTOR)
             appReferences.add(sender)
             contactNode.tell(RequestStatusMessage(), self)
         }

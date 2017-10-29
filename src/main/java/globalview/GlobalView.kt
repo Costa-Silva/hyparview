@@ -72,7 +72,6 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
         val message = StatusMessage(globalView.hashCode(), pendingEvents.toMutableMap(), toRemove.isEmpty())
         commActor.tell(StatusMessageWrapper(message, self), ActorRef.noSender())
         pendingEvents.clear()
-        gVMCounter.messagesBroadcast++
     }
 
     private fun globalAdd(globalNewNode: ActorRef, partialNewNode: ActorRef, needsGlobal: Boolean) {

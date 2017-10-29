@@ -1,33 +1,43 @@
 package communicationview
 
+import akka.actor.ActorContext
+import akka.actor.ActorPath
 import akka.actor.ActorRef
+import akkanetwork.AkkaConstants.Companion.COMM_ACTOR
+import akkanetwork.AkkaUtils
+import akkanetwork.AkkaUtils.Companion.createNodeID
 import communicationview.ActorUpdateEvent.DELETE_ACTOR
 import communicationview.ActorUpdateEvent.NEW_ACTOR
 import communicationview.messages.GossipMessage
 import communicationview.messages.StatusMessageWrapper
+import communicationview.wrappers.CommunicationMessages
+import communicationview.wrappers.CommunicationWrapper
 
-class Communication(val self: ActorRef,
-                    private val gvActor: ActorRef?,
-                    private val comMessages: CommunicationMessages) {
+class Communication(private val commWrapper: CommunicationWrapper,
+                    private val comMessages: CommunicationMessages,
+                    private val context: ActorContext,
+                    private val availableActors: MutableSet<String>) {
 
-    private val availableActors = mutableSetOf<ActorRef>()
-
-    fun updateActor(node: ActorRef, event: ActorUpdateEvent) {
-        when(event) {
-            NEW_ACTOR -> availableActors.add(node)
-            DELETE_ACTOR -> availableActors.remove(node)
+    fun updateActor(nodePathPartial: ActorPath, event: ActorUpdateEvent) {
+        val nodeID= createNodeID(nodePathPartial.name())
+        if (nodeID!= null) {
+            val nodePath = AkkaUtils.createActorPathFrom(nodeID, COMM_ACTOR)
+            when(event) {
+                NEW_ACTOR -> availableActors.add(nodePath)
+                DELETE_ACTOR -> availableActors.remove(nodePath)
+            }
         }
     }
 
     fun broadcast(message: StatusMessageWrapper) {
         availableActors.forEach {
             comMessages.sent++
-            it.tell(GossipMessage(message), self)
+            context.actorSelection(it).tell(GossipMessage(message), ActorRef.noSender())
         }
     }
 
     fun gossipMessageReceived(message: GossipMessage) {
         comMessages.received++
-        gvActor?.tell(message.message, ActorRef.noSender())
+        commWrapper.globalActor?.tell(message.message, ActorRef.noSender())
     }
 }
