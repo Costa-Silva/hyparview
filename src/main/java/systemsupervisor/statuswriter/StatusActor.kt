@@ -28,9 +28,13 @@ class StatusActor(private val partialViewData: PVSharedData,
     override fun createReceive(): Receive {
         return receiveBuilder()
                 .match(RequestFromAppMessage::class.java) { requestFromAppReceived(it.node) }
-                .match(RequestStatusMessage::class.java) { sender.tell(NodeStateMessage(partialViewData, commViewData, globalViewData), self) }
+                .match(RequestStatusMessage::class.java) { requestStatusMessageReceived() }
                 .match(NodeStateMessage::class.java) { nodeStateReceived(it) }
                 .build()
+    }
+
+    private fun requestStatusMessageReceived() {
+        sender.tell(NodeStateMessage(partialViewData, commViewData, globalViewData), self)
     }
 
     private fun nodeStateReceived(nodeStateMessage: NodeStateMessage) {

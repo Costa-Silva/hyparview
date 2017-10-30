@@ -7,4 +7,5 @@ import java.io.Serializable
 
 class NodeStateMessage(val partialViewData: PVSharedData,
                        val commViewData: CommSharedData,
-                       val glovalViewData: GVSharedData): Serializable
+                       val glovalViewData: GVSharedData
+                       ): Serializable

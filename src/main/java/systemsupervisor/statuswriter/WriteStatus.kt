@@ -67,6 +67,7 @@ class WriteStatus {
                 val result = Await.result(future, FiniteDuration(timeoutTime, TimeUnit.MILLISECONDS))
                 val message = result as NodeStateMessage
                 return createNodeInfo(message.partialViewData, message.commViewData, message.glovalViewData)
+
             } catch (e: Exception) { }
             return null
         }
