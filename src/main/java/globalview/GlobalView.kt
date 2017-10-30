@@ -35,8 +35,12 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                  private val gVMCounter: GVMessagesCounter,
                  private val pvActor: ActorRef,
                  private val commActor: ActorRef,
-                 imContact: Boolean) {
+                 myID: String,
+                 writeToFile: Boolean,
+                 imContact: Boolean,
+                 gvWriteWrapper: GlobalWriteToFileWrapper?) {
 
+    private val writeStatus = WriteToFile(writeToFile, myID, gvWriteWrapper)
     private val actorswithDifferentHash = mutableSetOf<ActorRef>()
     val timersMayBeDead = mutableMapOf<UUID, Timer>()
     var sendEventsTimer: Cancellable? = null
@@ -75,8 +79,8 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     }
 
     private fun globalAdd(globalNewNode: ActorRef, partialNewNode: ActorRef, needsGlobal: Boolean) {
-        //TODO WRITE TO FILE
         globalView.put(globalNewNode, partialNewNode)
+        writeStatus.update()
         if (needsGlobal) {
             sendGlobalMessage(globalNewNode)
         }
@@ -85,9 +89,9 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     fun receivedGlobalMessage(newView: MutableMap<ActorRef, ActorRef>, eventIds: LinkedList<Pair<UUID, Event>>) {
         globalView.clear()
         eventList.clear()
-        //TODO WRITE TO FILE
         globalView.putAll(newView)
         eventList.addAll(eventIds)
+        writeStatus.update()
     }
 
     private fun sendGlobalMessage(node: ActorRef) {
@@ -95,9 +99,9 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     }
 
     fun remove(node: ActorRef) {
-        //TODO WRITE TO FILE
         globalView.remove(node)
         toRemove.remove(node)
+        writeStatus.update()
     }
 
     private fun globalMayBeDead(globalNode: ActorRef, partialNode: ActorRef) {
@@ -288,5 +292,9 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     fun partialNodeMayBeDead(partialNode: ActorRef) {
         val globalNode = globalView.filterValues { it == partialNode }.entries.firstOrNull()?.key
         globalNode?.let { globalMayBeDead(it, partialNode)  }
+    }
+
+    fun startWritting() {
+        writeStatus.startWritting()
     }
 }

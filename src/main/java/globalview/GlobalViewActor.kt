@@ -9,12 +9,13 @@ import globalview.messages.external.GlobalMessage
 import globalview.messages.external.PingMessage
 import globalview.messages.internal.MayBeDeadMessage
 import globalview.messages.internal.PartialDiscoveredNewNode
+import globalview.messages.internal.StartWritting
 
 class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
 
     private val globalView = GlobalView(gvWrapper.eventList, gvWrapper.pendingEvents, gvWrapper.toRemove,
-            gvWrapper.globalView, self, gvWrapper.system, gvWrapper.gVMCounter, gvWrapper.partialActor,gvWrapper.commActor,
-            gvWrapper.imContact)
+            gvWrapper.globalView, self, gvWrapper.system, gvWrapper.gVMCounter, gvWrapper.partialActor,
+            gvWrapper.commActor, gvWrapper.myID, gvWrapper.testActivated, gvWrapper.imContact, gvWrapper.gvWriteWrapper)
 
     companion object {
         fun props(gvWrapper: GVDependenciesWrapper): Props {
@@ -30,6 +31,7 @@ class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
                 .match(PingMessage::class.java) { sender.tell(true, sender) }
 
                 // From myself
+                .match(StartWritting::class.java) { globalView.startWritting() }
                 .match(String::class.java) {
                     when(it) {
                         GVHelpers.SEND_HASH_MESSAGE -> globalView.sendHash()

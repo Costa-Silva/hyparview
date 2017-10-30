@@ -2,7 +2,6 @@ package globalview
 
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
-import akkanetwork.NodeID
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -15,4 +14,7 @@ class GVDependenciesWrapper(val eventList: LinkedList<Pair<UUID, Event>> = Linke
                             val partialActor: ActorRef,
                             val commActor: ActorRef,
                             val system: ActorSystem,
-                            val gVMCounter: GVMessagesCounter)
+                            val gVMCounter: GVMessagesCounter,
+                            val testActivated: Boolean,
+                            val myID: String,
+                            var gvWriteWrapper: GlobalWriteToFileWrapper? = null)

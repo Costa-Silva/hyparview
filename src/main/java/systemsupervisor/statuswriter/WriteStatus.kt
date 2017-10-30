@@ -41,17 +41,19 @@ class WriteStatus {
                     }
                 }
             }
+            writeStatus(root, nodesInfoArray)
+        }
 
+        fun writeStatus(root: JsonObject, nodesInfoArray: JsonArray) {
             try {
                 root.add("data", nodesInfoArray)
                 val jsonParser = JsonParser().parse(root.toString())
                 val prettyJsonString = GsonBuilder().setPrettyPrinting().create().toJson(jsonParser)
 
-                val filepath = Paths.get(System.getProperty("user.dir"), "data.json").toString()
-                val fileToDeletePath = Paths.get(filepath)
+                val fileToDeletePath = Paths.get(AkkaConstants.FILE_PATH)
                 Files.deleteIfExists(fileToDeletePath)
 
-                FileWriter(filepath).use({ file ->
+                FileWriter(AkkaConstants.FILE_PATH).use({ file ->
                     file.write(prettyJsonString)
                     System.err.println("Saved state!")
                 })
@@ -60,7 +62,7 @@ class WriteStatus {
             }
         }
 
-        private fun nodeInfoFor(nodeID: NodeID, statusActor: ActorRef): JsonObject? {
+        fun nodeInfoFor(nodeID: NodeID, statusActor: ActorRef): JsonObject? {
             val timeoutTime: Long = 500
             try {
                 val future = Patterns.ask(statusActor, RequestFromAppMessage(nodeID.identifier),timeoutTime)
@@ -72,7 +74,7 @@ class WriteStatus {
             return null
         }
 
-        private fun createNodeInfo(pvData: PVSharedData, commWrapper: CommSharedData, gvData: GVSharedData): JsonObject {
+        fun createNodeInfo(pvData: PVSharedData, commWrapper: CommSharedData, gvData: GVSharedData): JsonObject {
             val nodeInfo = JsonObject()
             nodeInfo.addProperty("id", pvData.identifier)
 
