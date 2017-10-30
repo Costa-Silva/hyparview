@@ -22,6 +22,7 @@ import globalview.messages.internal.StatusMessage
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.concurrent.duration.FiniteDuration
+import testlayer.statuswriter.WriteToFile
 import java.util.*
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.TimeUnit
@@ -35,12 +36,11 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
                  private val gVMCounter: GVMessagesCounter,
                  private val pvActor: ActorRef,
                  private val commActor: ActorRef,
-                 myID: String,
-                 writeToFile: Boolean,
-                 imContact: Boolean,
-                 gvWriteWrapper: GlobalWriteToFileWrapper?) {
+                 private val myID: String,
+                 private val writeToFile: Boolean,
+                 imContact: Boolean) {
 
-    private val writeStatus = WriteToFile(writeToFile, myID, gvWriteWrapper)
+    private var writeStatus: WriteToFile? = null
     private val actorswithDifferentHash = mutableSetOf<ActorRef>()
     val timersMayBeDead = mutableMapOf<UUID, Timer>()
     var sendEventsTimer: Cancellable? = null
@@ -80,7 +80,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
 
     private fun globalAdd(globalNewNode: ActorRef, partialNewNode: ActorRef, needsGlobal: Boolean) {
         globalView.put(globalNewNode, partialNewNode)
-        writeStatus.update()
+        writeStatus?.update()
         if (needsGlobal) {
             sendGlobalMessage(globalNewNode)
         }
@@ -91,7 +91,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
         eventList.clear()
         globalView.putAll(newView)
         eventList.addAll(eventIds)
-        writeStatus.update()
+        writeStatus?.update()
     }
 
     private fun sendGlobalMessage(node: ActorRef) {
@@ -101,7 +101,7 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
     fun remove(node: ActorRef) {
         globalView.remove(node)
         toRemove.remove(node)
-        writeStatus.update()
+        writeStatus?.update(node.path().name().split("global")[0])
     }
 
     private fun globalMayBeDead(globalNode: ActorRef, partialNode: ActorRef) {
@@ -294,7 +294,8 @@ class GlobalView(private val eventList: LinkedList<Pair<UUID, Event>>,
         globalNode?.let { globalMayBeDead(it, partialNode)  }
     }
 
-    fun startWritting() {
-        writeStatus.startWritting()
+    fun startWritting(myStatusActor: ActorRef) {
+        writeStatus = WriteToFile(writeToFile, myID, myStatusActor)
+        writeStatus?.update()
     }
 }

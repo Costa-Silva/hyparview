@@ -1,10 +1,9 @@
-package systemsupervisor.statuswriter
+package testlayer
 
 import akka.actor.ActorRef
 import akka.pattern.Patterns
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaUtils
-import akkanetwork.NodeID
 import com.google.gson.*
 import communicationview.wrappers.CommSharedData
 import globalview.GVSharedData
@@ -12,7 +11,7 @@ import partialview.wrappers.PVSharedData
 import scala.concurrent.Await
 import scala.concurrent.duration.FiniteDuration
 import systemsupervisor.graph.NodeStateMessage
-import systemsupervisor.statuswriter.messages.RequestFromAppMessage
+import testlayer.statuswriter.messages.RequestFromAppMessage
 import java.io.FileWriter
 import java.io.IOException
 import java.nio.file.Files
@@ -32,7 +31,7 @@ class WriteStatus {
                 val nodeID = AkkaUtils.createNodeID(identifier)
                 if(nodeID != null) {
                     if (pvData.identifier != identifier) {
-                        val newEntry = nodeInfoFor(nodeID, statusActor)
+                        val newEntry = nodeInfoFor(nodeID.identifier, statusActor)
                         if (newEntry != null) {
                             nodesInfoArray.add(newEntry)
                         }
@@ -62,10 +61,10 @@ class WriteStatus {
             }
         }
 
-        fun nodeInfoFor(nodeID: NodeID, statusActor: ActorRef): JsonObject? {
-            val timeoutTime: Long = 500
+        fun nodeInfoFor(nodeID: String, statusActor: ActorRef): JsonObject? {
+            val timeoutTime: Long = 1000
             try {
-                val future = Patterns.ask(statusActor, RequestFromAppMessage(nodeID.identifier),timeoutTime)
+                val future = Patterns.ask(statusActor, RequestFromAppMessage(nodeID),timeoutTime)
                 val result = Await.result(future, FiniteDuration(timeoutTime, TimeUnit.MILLISECONDS))
                 val message = result as NodeStateMessage
                 return createNodeInfo(message.partialViewData, message.commViewData, message.glovalViewData)

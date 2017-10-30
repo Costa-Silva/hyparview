@@ -1,11 +1,10 @@
-package systemsupervisor
+package testlayer
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import communicationview.wrappers.CommSharedData
 import globalview.GVSharedData
 import partialview.PVHelpers
 import partialview.wrappers.PVSharedData
-import systemsupervisor.statuswriter.WriteStatus
 
 
 class SystemStatus(system: ActorSystem, pvData: PVSharedData, commWrapper: CommSharedData, gvData: GVSharedData,
@@ -36,10 +35,10 @@ class SystemStatus(system: ActorSystem, pvData: PVSharedData, commWrapper: CommS
                 "1.7" -> printlnErr("Sent: ${pvData.mCounter.neighborRequestsSent} Received: ${pvData.mCounter.neighborRequestsReceived}")
                 "1.8" -> printlnErr("Sent: ${pvData.mCounter.shufflesSent} Received: ${pvData.mCounter.shufflesReceived}")
                 "1.9" -> printlnErr("Sent: ${pvData.mCounter.disconnectsSent} Received: ${pvData.mCounter.disconnectsReceived}")
-                "2.1" -> printlnErr("Global view: ${gvData.globalView.map { it.key.path().name()}}")
+                "2.1" -> printlnErr("Global view: ${gvData.globalView.map { it.key.path().name() }}")
                 "2.2" -> printlnErr("Event list: ${gvData.eventList.map { it.second }}")
                 "2.3" -> printlnErr("Pending events: ${gvData.pendingEvents.values}")
-                "2.4" -> printlnErr("Nodes that might be dead: ${gvData.toRemove.map { it.path().name()}}")
+                "2.4" -> printlnErr("Nodes that might be dead: ${gvData.toRemove.map { it.path().name() }}")
                 "2.5" -> printlnErr("Messages sent to check if alive: ${gvData.gVMCounter.messagesToCheckIfAlive}")
                 "2.6" -> printlnErr("Messages sent to resolve conflicts: ${gvData.gVMCounter.messagesToResolveConflict}")
                 "3.1" -> printlnErr("Broadcast messages sent: ${commWrapper.commMessages.sent} received: ${commWrapper.commMessages.received}")

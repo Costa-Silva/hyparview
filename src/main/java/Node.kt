@@ -1,5 +1,4 @@
 
-import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akkanetwork.AkkaConstants
 import akkanetwork.AkkaConstants.Companion.SYSTEM_NAME
@@ -7,13 +6,16 @@ import akkanetwork.AkkaUtils
 import com.typesafe.config.ConfigFactory
 import communicationview.CommunicationActor
 import communicationview.wrappers.CommSharedData
-import globalview.*
+import globalview.GVDependenciesWrapper
+import globalview.GVMessagesCounter
+import globalview.GVSharedData
+import globalview.GlobalViewActor
 import globalview.messages.internal.StartWritting
 import partialview.PartialViewActor
 import partialview.wrappers.PVDependenciesWrapper
 import partialview.wrappers.PVSharedData
-import systemsupervisor.SystemStatus
-import systemsupervisor.statuswriter.StatusActor
+import testlayer.SystemStatus
+import testlayer.statuswriter.StatusActor
 
 fun main(args: Array<String>) {
     // VS ask for MY_NODE_ID and Contact node
@@ -46,10 +48,8 @@ fun main(args: Array<String>) {
 
         val gvSharedData = GVSharedData(gvWrapper.eventList, gvWrapper.pendingEvents, gvWrapper.toRemove, gvWrapper.globalView, gvWrapper.gVMCounter)
         val pvSharedData = PVSharedData(myIdentifier, contactNode, pvWrapper.activeView, pvWrapper.passiveView, pvWrapper.passiveActiveView, pvWrapper.mCounter)
-        gvWrapper.gvWriteWrapper = GlobalWriteToFileWrapper(pvSharedData, commSharedData, gvSharedData)
         val statusActor = system.actorOf(StatusActor.props(pvSharedData, commSharedData , gvSharedData), myIdentifier+ AkkaConstants.STATUS_ACTOR)
-        globalRef.tell(StartWritting(), ActorRef.noSender())
-
+        globalRef.tell(StartWritting(),statusActor)
         SystemStatus(system, pvSharedData, commSharedData, gvSharedData, statusActor)
     }
 }

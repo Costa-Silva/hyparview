@@ -1,4 +1,4 @@
-package systemsupervisor.statuswriter.messages
+package testlayer.statuswriter.messages
 
 import java.io.Serializable
 

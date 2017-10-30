@@ -1,4 +1,4 @@
-package systemsupervisor.statuswriter
+package testlayer.statuswriter
 
 import akka.actor.AbstractActor
 import akka.actor.ActorRef
@@ -9,8 +9,8 @@ import communicationview.wrappers.CommSharedData
 import globalview.GVSharedData
 import partialview.wrappers.PVSharedData
 import systemsupervisor.graph.NodeStateMessage
-import systemsupervisor.statuswriter.messages.RequestFromAppMessage
-import systemsupervisor.statuswriter.messages.RequestStatusMessage
+import testlayer.statuswriter.messages.RequestFromAppMessage
+import testlayer.statuswriter.messages.RequestStatusMessage
 import java.util.*
 
 class StatusActor(private val partialViewData: PVSharedData,

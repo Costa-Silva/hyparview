@@ -16,5 +16,4 @@ class GVDependenciesWrapper(val eventList: LinkedList<Pair<UUID, Event>> = Linke
                             val system: ActorSystem,
                             val gVMCounter: GVMessagesCounter,
                             val testActivated: Boolean,
-                            val myID: String,
-                            var gvWriteWrapper: GlobalWriteToFileWrapper? = null)
+                            val myID: String)

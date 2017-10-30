@@ -15,7 +15,7 @@ class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
 
     private val globalView = GlobalView(gvWrapper.eventList, gvWrapper.pendingEvents, gvWrapper.toRemove,
             gvWrapper.globalView, self, gvWrapper.system, gvWrapper.gVMCounter, gvWrapper.partialActor,
-            gvWrapper.commActor, gvWrapper.myID, gvWrapper.testActivated, gvWrapper.imContact, gvWrapper.gvWriteWrapper)
+            gvWrapper.commActor, gvWrapper.myID, gvWrapper.testActivated, gvWrapper.imContact)
 
     companion object {
         fun props(gvWrapper: GVDependenciesWrapper): Props {
@@ -31,7 +31,7 @@ class GlobalViewActor(gvWrapper: GVDependenciesWrapper): AbstractActor() {
                 .match(PingMessage::class.java) { sender.tell(true, sender) }
 
                 // From myself
-                .match(StartWritting::class.java) { globalView.startWritting() }
+                .match(StartWritting::class.java) { globalView.startWritting(sender) }
                 .match(String::class.java) {
                     when(it) {
                         GVHelpers.SEND_HASH_MESSAGE -> globalView.sendHash()
