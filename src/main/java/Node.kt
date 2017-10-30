@@ -35,7 +35,7 @@ fun main(args: Array<String>) {
     val myNode = AkkaUtils.createNodeID(myIdentifier)
 
     if (contactNode != null && myNode != null) {
-
+        // Actors and dependencies initialization
         val commSharedData = CommSharedData()
         val commRef = system.actorOf(CommunicationActor.props(commSharedData), myIdentifier + AkkaConstants.COMM_ACTOR)
         val pvWrapper = PVDependenciesWrapper(contactNode = contactNode, myID = myNode, comActor = commRef)
