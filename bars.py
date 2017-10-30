@@ -35,8 +35,8 @@ def animate(i):
         a.append(data["data"][n]["JoinsReceived"])
         a.append(data["data"][n]["ForwardJoinsReceived"])
         a.append(data["data"][n]["ForwardJoinsSent"])
-        a.append(data["data"][n]["NeighborRequestsReceived"])
-        a.append(data["data"][n]["NeighborRequestsSent"])
+        #a.append(data["data"][n]["NeighborRequestsReceived"])
+        #a.append(data["data"][n]["NeighborRequestsSent"])
         a.append(data["data"][n]["DisconnectsReceived"])
         a.append(data["data"][n]["DisconnectsSent"])
         a.append(data["data"][n]["ShufflesReceived"])
@@ -45,10 +45,12 @@ def animate(i):
         a.append(data["data"][n]["BroadcastsReceived"])
         a.append(data["data"][n]["ResolveConflicts"])
         a.append(data["data"][n]["ChecksIfAlive"])
+
+
         messageCounters.append(a)
         peersId.append((data["data"][n]["id"]))
     
-    line_chart = pygal.Bar()
+    line_chart = pygal.Bar(legend_at_bottom=True)
     line_chart.title = 'Message usage evolution'
     line_chart.x_labels = map(str, peersId)
     
@@ -56,8 +58,8 @@ def animate(i):
     JoinsReceived = []
     ForwardJoinsReceived = []
     ForwardJoinsSent = []
-    NeighborRequestsReceived = []
-    NeighborRequestsSent = []
+    #NeighborRequestsReceived = []
+    #NeighborRequestsSent = []
     DisconnectsReceived = []
     DisconnectsSent = []
     ShufflesReceived = []
@@ -72,22 +74,22 @@ def animate(i):
         JoinsReceived.append(m[0])
         ForwardJoinsReceived.append(m[1])
         ForwardJoinsSent.append(m[2])
-        NeighborRequestsReceived.append(m[3])
-        NeighborRequestsSent.append(m[4])
-        DisconnectsReceived.append(m[5])
-        DisconnectsSent.append(m[6])
-        ShufflesReceived.append(m[7])
-        ShufflesSent.append(m[8])
-        BroadcastsSent.append(m[9])
-        BroadcastsReceived.append(m[10])
-        ResolveConflicts.append(m[11])
-        ChecksIfAlive.append(m[12])
+        #NeighborRequestsReceived.append(m[3])
+        #NeighborRequestsSent.append(m[4])
+        DisconnectsReceived.append(m[3])
+        DisconnectsSent.append(m[4])
+        ShufflesReceived.append(m[5])
+        ShufflesSent.append(m[6])
+        BroadcastsSent.append(m[7])
+        BroadcastsReceived.append(m[8])
+        ResolveConflicts.append(m[9])
+        ChecksIfAlive.append(m[10])
     
     line_chart.add('JoinsReceived', JoinsReceived)
     line_chart.add( 'ForwardJoinsReceived', ForwardJoinsReceived)
     line_chart.add( 'ForwardJoinsSent', ForwardJoinsSent)
-    line_chart.add( 'NeighborRequestsReceived', NeighborRequestsReceived)
-    line_chart.add( 'NeighborRequestsSent', NeighborRequestsSent)
+    #line_chart.add( 'NeighborRequestsReceived', NeighborRequestsReceived)
+    #line_chart.add( 'NeighborRequestsSent', NeighborRequestsSent)
     line_chart.add( 'DisconnectsReceived', DisconnectsReceived)
     line_chart.add( 'DisconnectsSent', DisconnectsSent)
     line_chart.add( 'ShufflesReceived', ShufflesReceived)
@@ -97,8 +99,6 @@ def animate(i):
     line_chart.add( 'ResolveConflicts', ResolveConflicts)
     line_chart.add( 'ChecksIfAlive', ChecksIfAlive)
 
-    
-    
     
     line_chart.render_to_png(filename="plot.png")
     #img = Image.imread("plot.png")

@@ -23,8 +23,8 @@ def animate(i):
     graphNodesGv = []
     peersId = []
 
-    line_chart = pygal.HorizontalBar()
-
+    line_chart = pygal.HorizontalBar(legend_at_bottom=True)
+    
     for n in range(0,len(data["data"])):
         strGV = (data["data"][n]["id"]) + " = "
         for i in range(0,len(data["data"][n]["gv"])):
