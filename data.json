@@ -1,0 +1,83 @@
+{
+  "system": "NoFails",
+  "data": [
+    {
+      "id": "0node",
+      "av": [
+        "2node",
+        "3node"
+      ],
+      "pv": [],
+      "gv": [
+        "3node",
+        "0node",
+        "2node"
+      ],
+      "JoinsReceived": 3,
+      "ForwardJoinsReceived": 0,
+      "ForwardJoinsSent": 2,
+      "NeighborRequestsReceived": 1,
+      "NeighborRequestsSent": 1,
+      "DisconnectsReceived": 0,
+      "DisconnectsSent": 1,
+      "ShufflesReceived": 62,
+      "ShufflesSent": 66,
+      "BroadcastsSent": 31,
+      "BroadcastsReceived": 28,
+      "ResolveConflicts": 0,
+      "ChecksIfAlive": 0
+    },
+    {
+      "id": "2node",
+      "av": [
+        "0node",
+        "3node"
+      ],
+      "pv": [],
+      "gv": [
+        "3node",
+        "0node",
+        "2node"
+      ],
+      "JoinsReceived": 0,
+      "ForwardJoinsReceived": 0,
+      "ForwardJoinsSent": 0,
+      "NeighborRequestsReceived": 0,
+      "NeighborRequestsSent": 0,
+      "DisconnectsReceived": 0,
+      "DisconnectsSent": 0,
+      "ShufflesReceived": 36,
+      "ShufflesSent": 31,
+      "BroadcastsSent": 16,
+      "BroadcastsReceived": 18,
+      "ResolveConflicts": 0,
+      "ChecksIfAlive": 0
+    },
+    {
+      "id": "3node",
+      "av": [
+        "2node",
+        "0node"
+      ],
+      "pv": [],
+      "gv": [
+        "3node",
+        "0node",
+        "2node"
+      ],
+      "JoinsReceived": 0,
+      "ForwardJoinsReceived": 1,
+      "ForwardJoinsSent": 0,
+      "NeighborRequestsReceived": 1,
+      "NeighborRequestsSent": 1,
+      "DisconnectsReceived": 1,
+      "DisconnectsSent": 0,
+      "ShufflesReceived": 55,
+      "ShufflesSent": 53,
+      "BroadcastsSent": 28,
+      "BroadcastsReceived": 26,
+      "ResolveConflicts": 0,
+      "ChecksIfAlive": 0
+    }
+  ]
+}
