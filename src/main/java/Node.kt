@@ -18,8 +18,7 @@ import testlayer.SystemStatus
 import testlayer.statuswriter.StatusActor
 
 fun main(args: Array<String>) {
-    // VS ask for MY_NODE_ID and Contact node
-    if (args.size<2 || args.size>3) {
+    if (args.size < 2 || args.size > 3) {
         System.err.println("Invalid number of args.")
         System.err.println("USAGE: CONTACT_NODE MY_NODE or CONTACT_NODE MY_NODE test")
         System.err.println("Inserting three arguments means it's a test and the global view will be written to file")

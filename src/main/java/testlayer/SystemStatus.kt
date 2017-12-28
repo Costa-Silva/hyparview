@@ -19,6 +19,7 @@ class SystemStatus(system: ActorSystem, pvData: PVSharedData, commWrapper: CommS
     }
 
     init {
+        printOptions()
         while (true) {
             val option = readLine()
             when(option) {
