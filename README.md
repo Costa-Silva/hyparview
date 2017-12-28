@@ -1,5 +1,4 @@
-# HyparView
-Kotlin implementation of HyParView: a membership protocol for reliable gossip-based broadcast 
+# Kotlin implementation of HyParView: a membership protocol for reliable gossip-based broadcast 
 
 This system uses HyParView protocol to get knowledge of all the nodes in the system.  
 
